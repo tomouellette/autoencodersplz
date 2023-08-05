@@ -32,6 +32,8 @@ model = MAE(
 
 ## Training
 
+<img width="100%" align='center' src='img/training_process.gif'/>
+
 ```python
 from tmim.trainers import AutoencoderTrainer
 
