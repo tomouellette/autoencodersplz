@@ -1,6 +1,6 @@
 import torch.nn as nn
 from functools import partial
-from tmim.layers.patch_embed import PatchEmbed
+from autoencodersplz.layers.patch_embed import PatchEmbed
 from typing import Optional, Callable, Union, Tuple
 
 from timm.models import VisionTransformer

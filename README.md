@@ -11,7 +11,7 @@ A variety of autoencoder structured models for generative modeling and/or repres
 [Masked Autoencoders Are Scalable Vision Learners](https://arxiv.org/abs/2111.06377)
 
 ```python
-from tmim.models import MAE
+from autoencodersplz.models import MAE
 
 model = MAE(
     img_size = 224,
@@ -37,7 +37,7 @@ model = MAE(
 <img width="100%" align='center' src='img/training_process.gif'/>
 
 ```python
-from tmim.trainers import AutoencoderTrainer
+from autoencodersplz.trainers import AutoencoderTrainer
 
 trainer = AutoencoderTrainer(
     model,

@@ -6,7 +6,7 @@ from einops import repeat, rearrange
 from typing import Union, Tuple, Optional, Callable
 from timm.models.vision_transformer import Block, Mlp
 
-from tmim.layers.dimensions import to_tuple
+from autoencodersplz.layers.dimensions import to_tuple
 from .vision_transformer import vision_transformer
 
 class MAE(nn.Module):

@@ -1,6 +1,5 @@
 import math
 import warnings
-import torch.nn as nn
 from torch.optim.lr_scheduler import _LRScheduler
 
 class CosineDecayWarmUp(_LRScheduler):
