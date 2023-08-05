@@ -8,6 +8,8 @@ A variety of autoencoder structued models for generative modeling and/or represe
 
 ### MAE
 
+[Masked Autoencoders Are Scalable Vision Learners](https://arxiv.org/abs/2111.06377)
+
 ```python
 from tmim.models import MAE
 
