@@ -1,0 +1,42 @@
+import torch
+import torch.nn as nn
+from einops.layers.torch import Rearrange
+from typing import Optional, Callable, Union
+
+from .dimensions import to_tuple
+
+class PatchEmbed(nn.Module):
+    def __init__(
+            self, 
+            img_size: Union[int, tuple, list] = 224,
+            patch_size: Union[int, tuple, list] = 16,
+            in_chans: int = 3,
+            embed_dim: int = 768,
+            patch_norm_layer: Optional[Callable] = None,
+            post_norm_layer: Optional[Callable] = None,
+            bias: bool = True
+        ):
+        super(PatchEmbed, self).__init__()
+        self.img_size = to_tuple(img_size)
+        self.patch_size = to_tuple(patch_size)
+        self.grid_size = (self.img_size[0] // self.patch_size[0], self.img_size[1] // self.patch_size[1])
+        self.num_patches = self.grid_size[0] * self.grid_size[1]
+        
+        assert \
+            self.img_size[0] % self.patch_size[0] == 0 and \
+            self.img_size[1] % self.patch_size[1] == 0, \
+            'img_size must be divisible by patch_size.'
+        
+        patch_dim = in_chans * self.patch_size[0] * self.patch_size[1]
+
+        self.rearrange = Rearrange('b c (h ph) (w pw) -> b (h w) (ph pw c)', ph=self.patch_size[0], pw=self.patch_size[1])
+        self.patch_norm = patch_norm_layer(patch_dim) if patch_norm_layer else nn.Identity()
+        self.proj = nn.Linear(patch_dim, embed_dim, bias=bias)
+        self.post_norm = post_norm_layer(embed_dim) if post_norm_layer else nn.Identity()
+
+    def forward(self, x: torch.Tensor, *args, **kwargs) -> torch.Tensor:
+        x = self.rearrange(x)
+        x = self.patch_norm(x)
+        x = self.proj(x)
+        x = self.post_norm(x)
+        return x
