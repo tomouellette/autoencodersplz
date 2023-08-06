@@ -5,8 +5,8 @@ A variety of autoencoder structured models for generative modeling and/or repres
 ## Table of contents
 
 - [Models](#models)
-- - [MAE](#mae)
-- - [ResidualAE](#residualae)
+  - [MAE](#mae)
+  - [ResidualAE](#residualae)
 - [Training](#training)
 
 ## <span id='models'> Models </span>
