@@ -1,7 +1,7 @@
 from .mae import MAE
-from .res_ae import ResAE
+from .residual_ae import ResidualAE
 
 __all__ = [
     'MAE',
-    'ResAE'
+    'ResidualAE'
 ]

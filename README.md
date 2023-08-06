@@ -32,14 +32,14 @@ model = MAE(
 )
 ```
 
-### ResAE
+### ResidualAE
 
 [Deep Residual Learning for Image Recognition](https://arxiv.org/abs/1512.03385)
 
 ```python
-from autoencodersplz.models import ResAE
+from autoencodersplz.models import ResidualAE
 
-model = ResAE(
+model = ResidualAE(
     img_size = 224,
     in_chans = 3,
     channels = [64, 128, 256, 512], 

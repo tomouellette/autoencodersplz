@@ -6,7 +6,7 @@ from typing import Tuple, Optional, Union
 from ..backbones.resnet import ResNet
 from ..layers.dimensions import to_tuple
 
-class ResAE(nn.Module):
+class ResidualAE(nn.Module):
     """
     A determinstic or variational autoencoder with a resnet backbone/encoder
     
@@ -36,7 +36,7 @@ class ResAE(nn.Module):
         upsample_mode: str = 'nearest',
         device: Optional[str] = None
     ):
-        super(ResAE, self).__init__()        
+        super(ResidualAE, self).__init__()        
         self.arguments = locals()
         img_size = to_tuple(img_size)
 
