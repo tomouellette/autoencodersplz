@@ -46,10 +46,8 @@ model = ResidualAE(
     blocks = [2, 2, 2, 2], 
     latent_dim = 16,
     beta = 0, # beta > 0 = variational
-    kld_weight = None,
     max_temperature = 1000, # kld temperature annealing
     upsample_mode = 'nearest',
-    device = None
 )
 ```
 
