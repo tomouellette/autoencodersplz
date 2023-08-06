@@ -4,9 +4,14 @@ A variety of autoencoder structured models for generative modeling and/or repres
 
 ## Table of contents
 
-## Models
+- [Models](#models)
+- - [MAE](#mae)
+- - [ResidualAE](#residualae)
+- [Training](#training)
 
-### MAE
+## <span id='models'> Models </span>
+
+### <span id='mae'> MAE </span>
 
 [Masked Autoencoders Are Scalable Vision Learners](https://arxiv.org/abs/2111.06377)
 
@@ -32,7 +37,7 @@ model = MAE(
 )
 ```
 
-### ResidualAE
+### <span id='residualae'> ResidualAE </span>
 
 [Deep Residual Learning for Image Recognition](https://arxiv.org/abs/1512.03385)
 
@@ -51,7 +56,7 @@ model = ResidualAE(
 )
 ```
 
-## Training
+## <span id='training'> Training </span>
 
 <img width="100%" align='center' src='img/training_process.gif'/>
 
