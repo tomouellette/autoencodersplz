@@ -166,7 +166,7 @@ class ResidualAE(nn.Module):
         if self.arguments['beta'] > 0:
             z = self._reparameterize(mu, var)
         else:
-	        z = mu
+            z = mu
         
         xhat = self.forward_decoder(z)
         
