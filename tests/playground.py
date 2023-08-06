@@ -32,6 +32,21 @@ model = MAE(
     decoder_num_heads = 2,
 )
 
+from autoencodersplz.models import ResAE
+
+model = ResAE(
+    img_size = 28,
+    in_chans = 1,
+    channels = [64], 
+    blocks = [2], 
+    latent_dim = 16,
+    beta = 0.1,
+    kld_weight = None,
+    max_temperature = 1000,
+    upsample_mode = 'nearest',
+    device = None
+)
+
 trainer = AutoencoderTrainer(
     model,
     train_loader,
@@ -43,3 +58,4 @@ trainer = AutoencoderTrainer(
 )
 
 trainer.fit()
+

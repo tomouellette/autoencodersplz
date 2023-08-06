@@ -32,6 +32,27 @@ model = MAE(
 )
 ```
 
+### ResAE
+
+[Deep Residual Learning for Image Recognition](https://arxiv.org/abs/1512.03385)
+
+```python
+from autoencodersplz.models import ResAE
+
+model = ResAE(
+    img_size = 224,
+    in_chans = 3,
+    channels = [64, 128, 256, 512], 
+    blocks = [2, 2, 2, 2], 
+    latent_dim = 16,
+    beta = 0, # beta > 0 = variational
+    kld_weight = None,
+    max_temperature = 1000, # kld temperature annealing
+    upsample_mode = 'nearest',
+    device = None
+)
+```
+
 ## Training
 
 <img width="100%" align='center' src='img/training_process.gif'/>
