@@ -5,12 +5,12 @@ from torchvision.datasets import MNIST
 from torchvision.transforms import ToTensor
 from torch.utils.data import DataLoader
 
-from autoencodersplz.models import ResidualAE
+from autoencodersplz.models import ConvResidualAE
 from autoencodersplz.trainers import AutoencoderTrainer
 
-class TestResidualAE(unittest.TestCase):
+class TestConvResidualAE(unittest.TestCase):
     def __init__(self, *args, **kwargs):
-        super(TestResidualAE, self).__init__(*args, **kwargs)
+        super(TestConvResidualAE, self).__init__(*args, **kwargs)
         self.train_loader = DataLoader(
             MNIST(root='tests/test_data', train=True, download=True, transform=ToTensor()),
             batch_size=32,
@@ -24,7 +24,7 @@ class TestResidualAE(unittest.TestCase):
         )
 
     def test_train_deterministic(self):
-        model = ResidualAE(
+        model = ConvResidualAE(
             img_size = 28,
             in_chans = 1,
             channels = [8],
@@ -50,7 +50,7 @@ class TestResidualAE(unittest.TestCase):
         trainer.fit()
 
     def test_train_stochastic(self):
-        model = ResidualAE(
+        model = ConvResidualAE(
             img_size = 28,
             in_chans = 1,
             channels = [64],

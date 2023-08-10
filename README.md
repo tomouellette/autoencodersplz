@@ -58,14 +58,14 @@ model = LinearResidualAE(
 )
 ```
 
-### <span id='residualae'> ResidualAE </span>
+### <span id='residualae'> ConvResidualAE </span>
 
 [Deep Residual Learning for Image Recognition](https://arxiv.org/abs/1512.03385)
 
 ```python
-from autoencodersplz.models import ResidualAE
+from autoencodersplz.models import ConvResidualAE
 
-model = ResidualAE(
+model = ConvResidualAE(
     img_size = 224,
     in_chans = 3,
     channels = [64, 128, 256, 512], 
