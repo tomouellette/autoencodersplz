@@ -4,12 +4,53 @@ A variety of autoencoder structured models for generative modeling and/or repres
 
 ## Table of contents
 
-- [Models](#models)
-  - [MAE](#mae)
-  - [ResidualAE](#residualae)
+- [Models](#models)  
+  - [LinearResidualAE](#linearresidualae)
+  - [ConvResidualAE](#convresidualae)
+  - [MAE](#mae)  
 - [Training](#training)
 
 ## <span id='models'> Models </span>
+
+### <span id='linearresidualae'> LinearResidualAE </span>
+
+A fully-connected autoencoder with a linear/multi-layer perceptron residual network backbone and decoder
+
+```python
+from autoencodersplz.models import LinearResidualAE
+
+model = LinearResidualAE(
+    img_size = 224,
+    in_chans = 3,
+    hidden_dim = [64, 64],
+    blocks = [2, 2],
+    dropout_rate = 0.1,
+    with_batch_norm = False,
+    latent_dim = 16,
+    beta = 0.1, # beta > 0 = variational
+    max_temperature = 1000, # kld temperature annealing
+    device = None
+)
+```
+
+### <span id='convresidualae'> ConvResidualAE </span>
+
+[Deep Residual Learning for Image Recognition](https://arxiv.org/abs/1512.03385)
+
+```python
+from autoencodersplz.models import ConvResidualAE
+
+model = ConvResidualAE(
+    img_size = 224,
+    in_chans = 3,
+    channels = [64, 128, 256, 512], 
+    blocks = [2, 2, 2, 2], 
+    latent_dim = 16,
+    beta = 0, # beta > 0 = variational
+    max_temperature = 1000, # kld temperature annealing
+    upsample_mode = 'nearest', # interpolation method
+)
+```
 
 ### <span id='mae'> MAE </span>
 
@@ -34,46 +75,6 @@ model = MAE(
     norm_layer = nn.LayerNorm,
     patch_norm_layer = nn.LayerNorm,
     post_norm_layer = nn.LayerNorm,
-)
-```
-
-### <span id='linearresidualae'> LinearResidualAE </span>
-
-A fully-connected autoencoder with a linear/multi-layer perceptron residual network backbone and decoder
-
-```python
-from autoencodersplz.models import LinearResidualAE
-
-model = LinearResidualAE(
-    img_size = 224,
-    in_chans = 3,
-    hidden_dim = [64, 64],
-    blocks = [2, 2],
-    dropout_rate = 0.1,
-    with_batch_norm = False,
-    latent_dim = 16,
-    beta = 0.1, # beta > 0 = variational
-    max_temperature = 1000, # kld temperature annealing
-    device = None
-)
-```
-
-### <span id='residualae'> ConvResidualAE </span>
-
-[Deep Residual Learning for Image Recognition](https://arxiv.org/abs/1512.03385)
-
-```python
-from autoencodersplz.models import ConvResidualAE
-
-model = ConvResidualAE(
-    img_size = 224,
-    in_chans = 3,
-    channels = [64, 128, 256, 512], 
-    blocks = [2, 2, 2, 2], 
-    latent_dim = 16,
-    beta = 0, # beta > 0 = variational
-    max_temperature = 1000, # kld temperature annealing
-    upsample_mode = 'nearest', # interpolation method
 )
 ```
 
