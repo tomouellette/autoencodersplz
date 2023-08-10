@@ -19,7 +19,7 @@ class MLP(nn.Module):
             hidden_layers: list, 
             output_dim: int, 
             dropout_rate: float = 0, 
-            activation=nn.ReLU
+            activation = nn.ReLU
         ):
         super(MLP, self).__init__()
         self.arguments = locals()

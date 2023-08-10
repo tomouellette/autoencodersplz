@@ -5,12 +5,30 @@ A variety of autoencoder structured models for generative modeling and/or repres
 ## Table of contents
 
 - [Models](#models)  
+  - [LinearAE](#linearae)
   - [LinearResidualAE](#linearresidualae)
   - [ConvResidualAE](#convresidualae)
   - [MAE](#mae)  
 - [Training](#training)
 
 ## <span id='models'> Models </span>
+
+### <span id='linearae'> LinearAE </span>
+
+A fully-connected autoencoder with a linear/multi-layer perceptron encoder and decoder
+
+```python
+model = LinearAE(
+    img_size = 224,
+    in_chans = 3,
+    hidden_layers = [64, 64],
+    dropout_rate = 0,
+    latent_dim = 16,
+    beta = 0.1, # beta > 0 = variational
+    max_temperature = 1000, # kld temperature annealing
+    device = None
+)
+```
 
 ### <span id='linearresidualae'> LinearResidualAE </span>
 
