@@ -32,13 +32,13 @@ model = MAE(
     decoder_num_heads = 2,
 )
 
-from autoencodersplz.models import ResAE
+from autoencodersplz.models import ResidualAE
 
-model = ResAE(
-    img_size = 28,
-    in_chans = 1,
-    channels = [64], 
-    blocks = [2], 
+model = ResidualAE(
+    img_size = 512,
+    in_chans = 3,
+    channels = [64,128],
+    blocks = [2,2],
     latent_dim = 16,
     beta = 0.1,
     kld_weight = None,

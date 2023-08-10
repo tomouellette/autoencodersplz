@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from typing import Union
 import torch.nn.functional as F
 from ..layers.dimensions import size_conv2d, size_maxpool2d
 
@@ -61,8 +62,8 @@ class ResNet(nn.Module):
     def __init__(
             self, 
             img_size: tuple, 
-            channels: list = [64, 128, 256, 512], 
-            blocks: list = [2, 2, 2, 2]
+            channels: Union[list, tuple] = (64, 128, 256, 512), 
+            blocks: Union[list, tuple] = (2, 2, 2, 2)
         ):
         super(ResNet, self).__init__()
         self.arguments = locals()
