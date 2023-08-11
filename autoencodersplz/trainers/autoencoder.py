@@ -1,5 +1,4 @@
 import os
-import math
 import torch
 import shutil
 import imageio
@@ -9,13 +8,10 @@ import torch.nn as nn
 from typing import IO
 from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
+from scipy.stats import gaussian_kde
 from torch.utils.data import DataLoader
 from .schedulers import CosineDecayWarmUp
 from .loggers import AutoencoderLogger
-
-"""
-Classes for fitting self-supervised related models
-"""
 
 class AutoencoderTrainer:
     """
@@ -162,8 +158,6 @@ class AutoencoderTrainer:
 
         for pos in ['left', 'bottom']:
             ax[20].spines[pos].set_color('w')
-        
-        from scipy.stats import gaussian_kde
 
         # plot delta loss
         ax[40].axvline(x=0, c='w', alpha=0.5, linestyle='dashed')        

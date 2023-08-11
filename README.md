@@ -18,6 +18,8 @@ A variety of autoencoder structured models for generative modeling and/or repres
 A fully-connected autoencoder with a linear/multi-layer perceptron encoder and decoder
 
 ```python
+from autoencodersplz.models import LinearAE
+
 model = LinearAE(
     img_size = 224,
     in_chans = 3,
