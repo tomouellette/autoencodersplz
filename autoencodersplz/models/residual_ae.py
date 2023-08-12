@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from typing import Tuple, Optional, Union
-from ..backbones.resnet import ResNet
+from ..backbones.resnet import ResNet, InvertedResNet
 from ..layers.dimensions import to_tuple
 
 class ConvResidualAE(nn.Module):
@@ -63,43 +63,13 @@ class ConvResidualAE(nn.Module):
 
         # decoding x|z
         self.decoder_input = nn.Linear(latent_dim, math.prod(self.encoder.output_dim))
-
-        decoder, channels = [], channels[::-1]
-        for i in range(len(channels)-1):
-            decoder.append(nn.Conv2d(
-                channels[i], 
-                channels[i+1], 
-                kernel_size=3, 
-                padding=1,
-            ))            
-            decoder.append(nn.BatchNorm2d(channels[i+1]))
-            decoder.append(nn.GELU())
-            decoder.append(nn.Upsample(scale_factor=2, mode=upsample_mode))
-
-        self.decoder = nn.Sequential(*decoder)
-        
-        # re-scale to output dimensions
-        output = []
-        for i in range(2):
-            output.append(nn.Conv2d(
-                channels[-1], 
-                channels[-1], 
-                kernel_size = 3, 
-                stride = 1,
-                padding = 1,
-            ))
-            output.append(nn.BatchNorm2d(channels[-1]))
-            output.append(nn.GELU())
-            output.append(nn.Upsample(scale_factor=2, mode=upsample_mode))
-        
-        output.append(nn.Conv2d(
-            channels[-1],
-            out_channels = in_chans,
-            kernel_size = 3,
-            padding = 1
-        ))
-        
-        self.output = nn.Sequential(*output)
+        self.decoder = InvertedResNet(
+            img_size = self.encoder.output_dim,
+            output_chans = in_chans,
+            channels = channels[::-1],
+            blocks = blocks[::-1],
+            upsample_mode = upsample_mode
+        )        
     
     def forward_encoder(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -120,7 +90,6 @@ class ConvResidualAE(nn.Module):
         """
         z = self.decoder_input(z).view(-1, *self.encoder.output_dim)
         xhat = self.decoder(z)
-        xhat = self.output(xhat)
         return xhat
     
     def _reparameterize(self, mu: torch.Tensor, var: torch.Tensor) -> torch.Tensor:
