@@ -57,6 +57,7 @@ class LinearResidualBlock(nn.Module):
         input_dim (int): input dimension
         dropout_rate (float): dropout rate
         with_batch_norm (bool): whether to use batch normalization
+        zero_initialization (bool): whether to initialize weights and biases to zero
     
     """
     def __init__(
@@ -64,6 +65,7 @@ class LinearResidualBlock(nn.Module):
             input_dim: int,
             dropout_rate = 0.0,
             with_batch_norm: bool = False,
+            zero_initialization: bool = False,
         ):
         super().__init__()        
         layers = []
@@ -71,10 +73,12 @@ class LinearResidualBlock(nn.Module):
             if with_batch_norm:
                 layers.append(nn.BatchNorm1d(input_dim, eps=1e-3))
 
-            layers.append(nn.Linear(input_dim, input_dim))
-            nn.init.uniform_(layers[-1].weight, -1e-3, 1e-3)
-            nn.init.uniform_(layers[-1].bias, -1e-3, 1e-3)
-            layers.append(nn.ReLU())            
+            layers.append(nn.Linear(input_dim, input_dim))                    
+            layers.append(nn.ReLU())
+
+            if zero_initialization:
+                nn.init.uniform_(layers[-2].weight, -1e-3, 1e-3)
+                nn.init.uniform_(layers[-2].bias, -1e-3, 1e-3)
             
         layers.append(nn.Dropout(p=dropout_rate))
         self.layers = nn.Sequential(*layers)
@@ -95,6 +99,7 @@ class LinearResidualNet(nn.Module):
         blocks (list): list of number of residual blocks per hidden layer
         dropout_rate (float): dropout rate
         with_batch_norm (bool): whether to use batch normalization in residual blocks
+        zero_initialization (bool): whether to initialize weights and biases to zero
     
     """
     def __init__(
@@ -105,6 +110,7 @@ class LinearResidualNet(nn.Module):
             blocks: int = [2, 2],
             dropout_rate: float = 0.0,
             with_batch_norm: bool = False,
+            zero_initialization: bool = False,
         ):
         self.arguments = locals()
         super(LinearResidualNet, self).__init__()
@@ -116,7 +122,8 @@ class LinearResidualNet(nn.Module):
                 layers.append(LinearResidualBlock(
                     input_dim = hidden, 
                     dropout_rate = dropout_rate,
-                    with_batch_norm = with_batch_norm
+                    with_batch_norm = with_batch_norm,
+                    zero_initialization = zero_initialization,
                 ))
 
             if i != len(hidden_dim) - 1:

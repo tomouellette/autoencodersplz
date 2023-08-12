@@ -17,6 +17,7 @@ class LinearResidualAE(nn.Module):
         blocks (list): list of number of residual blocks per hidden layer
         dropout_rate (float): dropout rate
         with_batch_norm (bool): whether to use batch normalization in residual blocks
+        zero_initialization (bool): whether to initialize weights and biases to zero
         latent_dim (int): size of latent space
         beta (float): if beta is a positive non-zero value, then model converts from deterministic to variational autoencoder
         kld_weight (float): optional value specifying additional weight on beta term
@@ -33,6 +34,7 @@ class LinearResidualAE(nn.Module):
         blocks: int = [2, 2],
         dropout_rate: float = 0.0,
         with_batch_norm: bool = False,
+        zero_initialization: bool = False,
         latent_dim: int = 16,
         beta: float = 0.1,
         kld_weight: Optional[float] = None,
@@ -64,7 +66,8 @@ class LinearResidualAE(nn.Module):
             hidden_dim = hidden_dim,
             blocks = blocks,
             dropout_rate = dropout_rate,
-            with_batch_norm = with_batch_norm
+            with_batch_norm = with_batch_norm,
+            zero_initialization = zero_initialization
         )
         
         # latent space z
@@ -79,7 +82,8 @@ class LinearResidualAE(nn.Module):
             hidden_dim = hidden_dim,
             blocks = blocks,
             dropout_rate = dropout_rate,
-            with_batch_norm = with_batch_norm
+            with_batch_norm = with_batch_norm,
+            zero_initialization = zero_initialization
         )
     
     def forward_encoder(self, x: torch.Tensor) -> torch.Tensor:

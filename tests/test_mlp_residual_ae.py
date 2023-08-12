@@ -42,7 +42,7 @@ class TestLinearResidualAE(unittest.TestCase):
             model,
             self.train_loader,
             self.test_loader,
-            epochs = 2,
+            epochs = 10,
             learning_rate = 1e-3,
             save_backbone = True,
             output_dir = 'tests/train_linear_residual_ae_deterministic'
@@ -78,8 +78,8 @@ class TestLinearResidualAE(unittest.TestCase):
         trainer.fit()
 
     def tearDown(self):
-        if os.path.exists('tests/train_linear_residual_ae_deterministic'):
-            shutil.rmtree('tests/train_linear_residual_ae_deterministic')
+        # if os.path.exists('tests/train_linear_residual_ae_deterministic'):
+        #     shutil.rmtree('tests/train_linear_residual_ae_deterministic')
         
         if os.path.exists('tests/train_linear_residual_ae_stochastic'):
             shutil.rmtree('tests/train_linear_residual_ae_stochastic')
