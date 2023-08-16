@@ -27,10 +27,10 @@ class TestVQVAE(unittest.TestCase):
         model = VQVAE(
             img_size = 28,
             in_chans = 1,
-            channels = [8],
-            blocks = [1],
-            codebook_dim = 16,
-            code_dim = 16,
+            channels = [16],
+            blocks = [2],
+            codebook_dim = 256,
+            code_dim = 64,
             beta = 0.25,            
             upsample_mode = 'nearest',
             device = None
@@ -40,7 +40,7 @@ class TestVQVAE(unittest.TestCase):
             model,
             self.train_loader,
             self.test_loader,
-            epochs = 10,
+            epochs = 2,
             learning_rate = 1e-3,
             save_backbone = True,
             output_dir = 'tests/train_vqvae'
@@ -48,9 +48,9 @@ class TestVQVAE(unittest.TestCase):
         
         trainer.fit()
 
-    # def tearDown(self):
-    #     if os.path.exists('tests/train_vqvae'):
-    #         shutil.rmtree('tests/train_vqvae')    
+    def tearDown(self):
+        if os.path.exists('tests/train_vqvae'):
+            shutil.rmtree('tests/train_vqvae')    
 
 if __name__ == '__main__':
     unittest.main()
