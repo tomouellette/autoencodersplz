@@ -19,6 +19,7 @@ A variety of autoencoder structured models for generative modeling and/or repres
 A fully-connected autoencoder with a linear/multi-layer perceptron encoder and decoder
 
 ```python
+import torch
 from autoencodersplz.models import LinearAE
 
 model = LinearAE(
@@ -31,6 +32,10 @@ model = LinearAE(
     max_temperature = 1000, # kld temperature annealing
     device = None
 )
+
+img = torch.rand(1, 3, 224, 224)
+
+loss, xhat = model(img)
 ```
 
 ### <span id='linearresidualae'> LinearResidualAE </span>
@@ -38,6 +43,7 @@ model = LinearAE(
 A fully-connected autoencoder with a linear/multi-layer perceptron residual network backbone and decoder
 
 ```python
+import torch
 from autoencodersplz.models import LinearResidualAE
 
 model = LinearResidualAE(
@@ -50,8 +56,12 @@ model = LinearResidualAE(
     latent_dim = 16,
     beta = 0.1, # beta > 0 = variational
     max_temperature = 1000, # kld temperature annealing
-    device = None
+    device = None,
 )
+
+img = torch.rand(1, 3, 224, 224)
+
+loss, xhat = model(img)
 ```
 
 ### <span id='convresidualae'> ConvResidualAE </span>
@@ -59,6 +69,7 @@ model = LinearResidualAE(
 [Deep Residual Learning for Image Recognition](https://arxiv.org/abs/1512.03385)
 
 ```python
+import torch
 from autoencodersplz.models import ConvResidualAE
 
 model = ConvResidualAE(
@@ -70,7 +81,12 @@ model = ConvResidualAE(
     beta = 0, # beta > 0 = variational
     max_temperature = 1000, # kld temperature annealing
     upsample_mode = 'nearest', # interpolation method
+    device = None,
 )
+
+img = torch.rand(1, 3, 224, 224)
+
+loss, xhat = model(img)
 ```
 
 ### <span id='vqvae'> VQVAE </span>
@@ -91,17 +107,20 @@ model = VQVAE(
     codebook_init = 'uniform',
     metric = 'euclidean',
     beta = 0.25,
-    upsample_mode = 'nearest'
+    upsample_mode = 'nearest',
+    device = None
 )
 
-x = torch.rand(10, 3, 224, 224)
-loss, xhat = model(x)
+img = torch.rand(1, 3, 224, 224)
+
+loss, xhat = model(img)
 ```
 ### <span id='mae'> MAE </span>
 
 [Masked Autoencoders Are Scalable Vision Learners](https://arxiv.org/abs/2111.06377)
 
 ```python
+import torch
 from autoencodersplz.models import MAE
 
 model = MAE(
@@ -120,7 +139,12 @@ model = MAE(
     norm_layer = nn.LayerNorm,
     patch_norm_layer = nn.LayerNorm,
     post_norm_layer = nn.LayerNorm,
+    device = None,
 )
+
+img = torch.rand(1, 3, 224, 224)
+
+loss, xhat = model(img)
 ```
 
 ## <span id='training'> Training </span>
