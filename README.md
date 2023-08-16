@@ -78,6 +78,7 @@ model = ConvResidualAE(
 [Neural Discrete Representation Learning](https://arxiv.org/abs/1711.00937)
 
 ```python
+import torch
 from autoencodersplz.models import VQVAE
 
 model = VQVAE(
@@ -92,6 +93,9 @@ model = VQVAE(
     beta = 0.25,
     upsample_mode = 'nearest'
 )
+
+x = torch.rand(10, 3, 224, 224)
+loss, xhat = model(x)
 ```
 ### <span id='mae'> MAE </span>
 
