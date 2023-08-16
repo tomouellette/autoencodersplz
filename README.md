@@ -83,7 +83,7 @@ from autoencodersplz.models import VQVAE
 model = VQVAE(
     img_size = 224,
     in_chans = 3,
-    channels = [64,128,256,512], 
+    channels = [64, 128, 256, 512], 
     blocks = [2, 2, 2, 2], 
     codebook_dim = 32,
     code_dim = 64,
