@@ -35,7 +35,7 @@ model = LinearAE(
 
 img = torch.rand(1, 3, 224, 224)
 
-loss, xhat = model(img)
+loss, reconstructed_img = model(img)
 ```
 
 ### <span id='linearresidualae'> LinearResidualAE </span>
@@ -61,7 +61,7 @@ model = LinearResidualAE(
 
 img = torch.rand(1, 3, 224, 224)
 
-loss, xhat = model(img)
+loss, reconstructed_img = model(img)
 ```
 
 ### <span id='convresidualae'> ConvResidualAE </span>
@@ -86,7 +86,7 @@ model = ConvResidualAE(
 
 img = torch.rand(1, 3, 224, 224)
 
-loss, xhat = model(img)
+loss, reconstructed_img = model(img)
 ```
 
 ### <span id='vqvae'> VQVAE </span>
@@ -113,7 +113,7 @@ model = VQVAE(
 
 img = torch.rand(1, 3, 224, 224)
 
-loss, xhat = model(img)
+loss, reconstructed_img = model(img)
 ```
 ### <span id='mae'> MAE </span>
 
@@ -144,7 +144,7 @@ model = MAE(
 
 img = torch.rand(1, 3, 224, 224)
 
-loss, xhat = model(img)
+loss, reconstructed_img = model(img)
 ```
 
 ## <span id='training'> Training </span>
