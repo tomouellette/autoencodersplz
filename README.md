@@ -18,6 +18,8 @@ A variety of autoencoder structured models for generative modeling and/or repres
 
 A fully-connected autoencoder with a linear/multi-layer perceptron encoder and decoder
 
+[Reducing the Dimensionality of Data with Neural Networks](https://www.science.org/doi/10.1126/science.1127647)
+
 ```python
 import torch
 from autoencodersplz.models import LinearAE
@@ -40,7 +42,9 @@ loss, reconstructed_img = model(img)
 
 ### <span id='linearresidualae'> LinearResidualAE </span>
 
-A fully-connected autoencoder with a linear/multi-layer perceptron residual network backbone and decoder
+A fully-connected autoencoder with a linear/multi-layer perceptron residual network encoder and decoder
+
+[Skip Connections Eliminate Singularities](https://arxiv.org/abs/1701.09175)
 
 ```python
 import torch
@@ -65,6 +69,8 @@ loss, reconstructed_img = model(img)
 ```
 
 ### <span id='convresidualae'> ConvResidualAE </span>
+
+A convolutional autoencoder with a ResNet encoder and symmetric decoder
 
 [Deep Residual Learning for Image Recognition](https://arxiv.org/abs/1512.03385)
 
@@ -91,6 +97,8 @@ loss, reconstructed_img = model(img)
 
 ### <span id='vqvae'> VQVAE </span>
 
+A vector-quantized variational autoencoder with a ResNet encoder and symmetric decoder
+
 [Neural Discrete Representation Learning](https://arxiv.org/abs/1711.00937)
 
 ```python
@@ -116,6 +124,8 @@ img = torch.rand(1, 3, 224, 224)
 loss, reconstructed_img = model(img)
 ```
 ### <span id='mae'> MAE </span>
+
+A masked autoencoder with a vision transformer encoder and decoder
 
 [Masked Autoencoders Are Scalable Vision Learners](https://arxiv.org/abs/2111.06377)
 
