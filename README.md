@@ -8,6 +8,7 @@ A variety of autoencoder structured models for generative modeling and/or repres
   - [LinearAE](#linearae)
   - [LinearResidualAE](#linearresidualae)
   - [ConvResidualAE](#convresidualae)
+  - [VQVAE](#vqvae)
   - [MAE](#mae)  
 - [Training](#training)
 
@@ -72,6 +73,26 @@ model = ConvResidualAE(
 )
 ```
 
+### <span id='vqvae'> VQVAE </span>
+
+[Neural Discrete Representation Learning](https://arxiv.org/abs/1711.00937)
+
+```python
+from autoencodersplz.models import VQVAE
+
+model = VQVAE(
+    img_size = 224,
+    in_chans = 3,
+    channels = [64,128,256,512], 
+    blocks = [2, 2, 2, 2], 
+    codebook_dim = 32,
+    code_dim = 64,
+    codebook_init = 'uniform',
+    metric = 'euclidean',
+    beta = 0.25,
+    upsample_mode = 'nearest'
+)
+```
 ### <span id='mae'> MAE </span>
 
 [Masked Autoencoders Are Scalable Vision Learners](https://arxiv.org/abs/2111.06377)
