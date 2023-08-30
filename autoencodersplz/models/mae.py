@@ -172,10 +172,17 @@ class MAE(nn.Module):
     def forward(self, img: torch.Tensor) -> torch.Tensor:
         self.device, self.img_size = img.device, img.shape[2:]
         
+        batch_size = img.shape[0]
+        batch_range = torch.arange(batch_size)[:, None]
+        
         tokens, mask_ids, unmask_ids = self.forward_encoder(img)
         
         decoded_tokens = self.forward_decoder(tokens, mask_ids, unmask_ids)
         
         loss = self.forward_loss(img, decoded_tokens, mask_ids)
+
+        reconstructed = torch.zeros(decoded_tokens.shape)
+        reconstructed[batch_range, unmask_ids] = self.encoder.patch_embed.rearrange(img)[batch_range, unmask_ids]
+        reconstructed[batch_range, mask_ids] = decoded_tokens[batch_range, mask_ids]
 
         return loss, self._patches_to_img(decoded_tokens)
