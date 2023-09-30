@@ -132,6 +132,9 @@ A finite-scalar quantized variational autoencoder with a ResNet encoder and symm
 [Finite Scalar Quantization: VQ-VAE Made Simple](https://arxiv.org/abs/2309.15505)
 
 ```python
+import torch
+from autoencodersplz.models import FSQVAE
+
 model = FSQVAE(
     img_size = 224,
     in_chans = 3,
