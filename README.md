@@ -109,21 +109,22 @@ from autoencodersplz.models import VQVAE
 model = VQVAE(
     img_size = 224,
     in_chans = 3,
-    channels = [64, 128, 256, 512], 
-    blocks = [2, 2, 2, 2], 
-    codebook_dim = 32,
-    code_dim = 64,
-    codebook_init = 'uniform',
-    metric = 'euclidean',
-    beta = 0.25,
+    channels = [64, 128, 256, 512],
+    blocks = [2, 2, 2, 2],
+    codebook_size = 256,
+    codebook_dim = 8,
+    use_cosine_sim = True,
+    kmeans_init = True,
+    commitment_weight = 0.5,
     upsample_mode = 'nearest',
-    device = None
+    vq_kwargs = {},
 )
 
 img = torch.rand(1, 3, 224, 224)
 
 loss, reconstructed_img = model(img)
 ```
+
 ### <span id='mae'> MAE </span>
 
 A masked autoencoder with a vision transformer encoder and decoder

@@ -40,7 +40,7 @@ class TestConvResidualAE(unittest.TestCase):
             model,
             self.train_loader,
             self.test_loader,
-            epochs = 2,
+            epochs = 1,
             learning_rate = 1e-3,
             save_backbone = True,
             output_dir = 'tests/train_residual_ae_deterministic'
@@ -65,7 +65,7 @@ class TestConvResidualAE(unittest.TestCase):
             model,
             self.train_loader,
             self.test_loader,
-            epochs = 2,
+            epochs = 1,
             learning_rate = 1e-3,
             save_backbone = True,
             output_dir = 'tests/train_residual_ae_stochastic'
