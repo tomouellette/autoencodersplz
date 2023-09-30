@@ -190,7 +190,7 @@ loss, reconstructed_img = model(img)
 
 <img width="100%" align='center' src='img/training_process.gif'/>
 
-The `Trainer` class enables basic training using a single CPU or GPU for any model in the `autoencodersplz` library. The `Trainer` class also will save a visualization of the training process (`.gif`) if you provide a path to the `output_dir` argument.
+The `Trainer` class enables basic training using a single CPU or GPU for any model in the `autoencodersplz` library. The `Trainer` class will also automatically save the autoencoder model, backbone/encoder, losses, and a visualization of the training process (`.gif`) if you provide a path to the `output_dir` argument.
 
 ```python
 from autoencodersplz.trainers import Trainer
@@ -205,7 +205,7 @@ trainer = Trainer(
     weight_decay = 0.05,
     patience = 10,
     scheduler = 'plateau',
-    save_backbone = False,
+    save_backbone = True,
     show_plots = False,
     output_dir = 'training_run/',
     device = None,
