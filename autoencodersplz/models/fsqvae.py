@@ -32,6 +32,11 @@ class FSQVAE(nn.Module):
         Additional keyword arguments for the vector quantization layer; see the
         vector-quantize-pytorch package for more details on available parameters
     
+    Raises
+    ------
+    ValueError
+        If the height/width of the encoder output convolutions is less than the number of FSQ levels
+    
     Notes
     -----
     To make comparison against a VQ-VAE, the FSQ paper (Ref 1, Section 4.4) suggests the following 
@@ -79,12 +84,14 @@ class FSQVAE(nn.Module):
             self.project_out = nn.Conv2d(latent_dim, self.latent_channels, kernel_size=1)
             self.latent_channels = latent_dim
 
-        if self.latent_h != self.fsq_channels:
+        if self.latent_h > self.fsq_channels:
             self.to_levels = nn.Conv2d(self.latent_channels, self.latent_channels, kernel_size=self.latent_h-self.fsq_channels+1)
             self.from_levels = nn.ConvTranspose2d(self.latent_channels, self.latent_channels, kernel_size=self.latent_h-self.fsq_channels+1)
         else:
-            self.to_levels = nn.Identity()
-            self.from_levels = nn.Identity()
+            raise ValueError(
+                "Height/width of encoder convolutions must be greater than or equal to " + \
+                f"the number of levels (encoder channels: {self.latent_h}, FSQ channels: {self.fsq_channels})"
+            )
         
         self.vector_quantize = FSQ(levels=levels)
         

@@ -39,7 +39,7 @@ class TestFSQVAE(unittest.TestCase):
             self.train_loader,
             self.test_loader,
             epochs = 1,
-            learning_rate = 1e-3,
+            learning_rate = 1e-4,
             save_backbone = True,
             output_dir = 'tests/train_fsqvae'
         )
@@ -61,7 +61,7 @@ class TestFSQVAE(unittest.TestCase):
                     levels = levels,
                     upsample_mode = 'nearest'
                 )
-                
+
                 _ = model(x)
         
     def tearDown(self):

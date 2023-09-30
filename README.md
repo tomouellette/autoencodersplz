@@ -9,6 +9,7 @@ A variety of autoencoder structured models for generative modeling and/or repres
   - [LinearResidualAE](#linearresidualae)
   - [ConvResidualAE](#convresidualae)
   - [VQVAE](#vqvae)
+  - [FSQVAE](#fsqvae)
   - [MAE](#mae)  
 - [Training](#training)
   - [Basic](#basic-training)
