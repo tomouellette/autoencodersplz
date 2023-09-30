@@ -72,6 +72,8 @@ class ResNet(nn.Module):
         if len(blocks) != len(channels):
             raise ValueError("len(n_blocks) must equal len(channels)")
         
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
         c, h, w = img_size
         
         # Input convolutions where input channel is usually set to 64
@@ -114,6 +116,7 @@ class ResNet(nn.Module):
         """
         I/O: (N, C, H, W) -> (N, n_output)
         """
+        self.device = x.device
         x = self.input(x)
         x = self.residual_blocks(x)
         return x
@@ -198,6 +201,8 @@ class InvertedResNet(nn.Module):
         if len(blocks) != len(channels):
             raise ValueError("len(n_blocks) must equal len(channels)")
         
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
         c, *_ = img_size
         
         # Input convolutions where input channel is usually set to 64
@@ -233,6 +238,7 @@ class InvertedResNet(nn.Module):
         """
         I/O: (N, C, H, W) -> (N, n_output)
         """
+        self.device = x.device
         x = self.input(x)
         x = self.residual_blocks(x)
         x = self.output(x)

@@ -23,6 +23,9 @@ class MLP(nn.Module):
         ):
         super(MLP, self).__init__()
         self.arguments = locals()
+
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
         if (len(hidden_layers) == 0) | (type(hidden_layers) != list):
             raise ValueError("Hidden layers must be a list of integers.")
         
@@ -47,6 +50,7 @@ class MLP(nn.Module):
         self.layers = nn.Sequential(*layers)
         
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        self.device = x.device        
         return self.layers(x)
 
 class LinearResidualBlock(nn.Module):
@@ -69,7 +73,7 @@ class LinearResidualBlock(nn.Module):
         ):
         super().__init__()        
         layers = []
-        for i in range(2):
+        for _ in range(2):
             if with_batch_norm:
                 layers.append(nn.BatchNorm1d(input_dim, eps=1e-3))
 
@@ -111,11 +115,13 @@ class LinearResidualNet(nn.Module):
             dropout_rate: float = 0.0,
             with_batch_norm: bool = False,
             zero_initialization: bool = False,
-        ):
-        self.arguments = locals()
+        ):        
         super(LinearResidualNet, self).__init__()
+        self.arguments = locals()
         assert len(blocks) == len(hidden_dim), "n_blocks must equal len(hidden_dim)"
         
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
         layers = [nn.Linear(input_dim, hidden_dim[0])]
         for i, hidden in enumerate(hidden_dim):
             for _ in range(blocks[i]):
@@ -134,4 +140,5 @@ class LinearResidualNet(nn.Module):
         self.layers = nn.Sequential(*layers)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        self.device = x.device
         return self.layers(x)

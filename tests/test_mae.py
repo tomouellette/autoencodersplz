@@ -6,7 +6,7 @@ from torchvision.transforms import ToTensor
 from torch.utils.data import DataLoader
 
 from autoencodersplz.models import MAE
-from autoencodersplz.trainers import AutoencoderTrainer
+from autoencodersplz.trainers import Trainer
 
 class TestMAE(unittest.TestCase):
     def __init__(self, *args, **kwargs):
@@ -27,18 +27,18 @@ class TestMAE(unittest.TestCase):
         model = MAE(
             img_size = 28, 
             in_chans = 1, 
-            patch_size = 4,
-            embed_dim = 32,
+            patch_size = 14,
+            embed_dim = 8,
             mlp_ratio = 2,
-            depth = 2,
-            num_heads = 2,
-            mask_ratio = 0.7,
-            decoder_embed_dim = 32,
-            decoder_depth = 2,
-            decoder_num_heads = 2,
+            depth = 1,
+            num_heads = 1,
+            mask_ratio = 0.5,
+            decoder_embed_dim = 8,
+            decoder_depth = 1,
+            decoder_num_heads = 1,
         )
 
-        trainer = AutoencoderTrainer(
+        trainer = Trainer(
             model,
             self.train_loader,
             self.test_loader,

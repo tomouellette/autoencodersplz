@@ -6,7 +6,7 @@ from torchvision.transforms import ToTensor
 from torch.utils.data import DataLoader
 
 from autoencodersplz.models import LinearAE
-from autoencodersplz.trainers import AutoencoderTrainer
+from autoencodersplz.trainers import Trainer
 
 class TestLinearAE(unittest.TestCase):
     def __init__(self, *args, **kwargs):
@@ -27,16 +27,15 @@ class TestLinearAE(unittest.TestCase):
         model = LinearAE(
             img_size = 28,
             in_chans = 1,
-            hidden_layers = [64, 64],
+            hidden_layers = [4, 4],
             dropout_rate = 0,
             latent_dim = 16,
             beta = 0.,
             kld_weight = None,
             max_temperature = 1000,
-            device = None
         )
 
-        trainer = AutoencoderTrainer(
+        trainer = Trainer(
             model,
             self.train_loader,
             self.test_loader,
@@ -52,16 +51,15 @@ class TestLinearAE(unittest.TestCase):
         model = LinearAE(
             img_size = 28,
             in_chans = 1,
-            hidden_layers = [64, 64],
+            hidden_layers = [4, 4],
             dropout_rate = 0,
             latent_dim = 16,
             beta = 0.5,
             kld_weight = None,
             max_temperature = 1000,
-            device = None
         )
 
-        trainer = AutoencoderTrainer(
+        trainer = Trainer(
             model,
             self.train_loader,
             self.test_loader,

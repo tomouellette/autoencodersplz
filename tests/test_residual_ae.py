@@ -6,7 +6,7 @@ from torchvision.transforms import ToTensor
 from torch.utils.data import DataLoader
 
 from autoencodersplz.models import ConvResidualAE
-from autoencodersplz.trainers import AutoencoderTrainer
+from autoencodersplz.trainers import Trainer
 
 class TestConvResidualAE(unittest.TestCase):
     def __init__(self, *args, **kwargs):
@@ -27,17 +27,16 @@ class TestConvResidualAE(unittest.TestCase):
         model = ConvResidualAE(
             img_size = 28,
             in_chans = 1,
-            channels = [8],
+            channels = [4],
             blocks = [1],
             latent_dim = 16,
             beta = 0.,
             kld_weight = None,
             max_temperature = 1000,
             upsample_mode = 'nearest',
-            device = None
         )
 
-        trainer = AutoencoderTrainer(
+        trainer = Trainer(
             model,
             self.train_loader,
             self.test_loader,
@@ -53,17 +52,16 @@ class TestConvResidualAE(unittest.TestCase):
         model = ConvResidualAE(
             img_size = 28,
             in_chans = 1,
-            channels = [64],
-            blocks = [2],
+            channels = [4],
+            blocks = [1],
             latent_dim = 16,
             beta = 0.1,
             kld_weight = None,
             max_temperature = 1000,
             upsample_mode = 'nearest',
-            device = None
         )
 
-        trainer = AutoencoderTrainer(
+        trainer = Trainer(
             model,
             self.train_loader,
             self.test_loader,

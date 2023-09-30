@@ -1,5 +1,5 @@
-from .autoencoder import AutoencoderTrainer
+from .basic import Trainer
 
 __all__ = [
-    'AutoencoderTrainer',
+    'Trainer',
 ]

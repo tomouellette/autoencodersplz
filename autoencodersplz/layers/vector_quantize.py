@@ -27,6 +27,8 @@ class VectorQuantizer(nn.Module):
     ):
         super(VectorQuantizer, self).__init__()
         self.arguments = locals()
+
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         
         self.codebook_dim = codebook_dim
         self.code_dim = code_dim
@@ -47,7 +49,7 @@ class VectorQuantizer(nn.Module):
         
         """
         if mode == 'uniform':
-            self.codebook.weight.data.uniform_(-1/self.codebook_dim, 1/self.codebook_dim)
+            self.codebook.weight.data.uniform_(-1/self.codebook_dim, 1/self.codebook_dim).to(self.device)
     
     def _find_codebook_neighbours(self, z: torch.Tensor) -> torch.Tensor:
         """
@@ -119,6 +121,8 @@ class VectorQuantizer(nn.Module):
         """
         Forward pass through the vector quantizer
         """
+        self.device = z.device
+
         if self.codebook_init:
             self._codebook_init(self.codebook_init)
             self.codebook_init = None

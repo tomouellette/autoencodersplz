@@ -20,9 +20,7 @@ class LinearAE(nn.Module):
         beta (float): if beta is a positive non-zero value, then model converts from deterministic to variational autoencoder
         kld_weight (float): optional value specifying additional weight on beta term
         max_temperature (int): # of loss updates until beta term reaches max value (i.e. temperature annealing of KLD loss with iter/max_temperature)
-        upsample_mode (str): image upsampling mode for decoder
-        device (str): device to run model on (e.g. 'cpu', 'cuda:0')
-    
+        upsample_mode (str): image upsampling mode for decoder    
     """
     def __init__(
         self, 
@@ -35,16 +33,12 @@ class LinearAE(nn.Module):
         beta: float = 0.1,
         kld_weight: Optional[float] = None,
         max_temperature: int = 1000,
-        device: Optional[str] = None
     ):
         super(LinearAE, self).__init__()
         self.arguments = locals()
         self.img_size = to_tuple(img_size)
-
-        if isinstance(device, type(None)):
-            self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        else:
-            self.device = device
+        
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         
         self.iter = 0
         self.in_chans = in_chans     
@@ -86,7 +80,7 @@ class LinearAE(nn.Module):
         """        
         z = self.encoder(x.flatten(1))
         mu = self.latent_mu(z)
-        var = self.latent_var(z)        
+        var = self.latent_var(z)
         return mu, var
 
     def forward_decoder(self, z: torch.Tensor) -> torch.Tensor:
@@ -123,7 +117,7 @@ class LinearAE(nn.Module):
         # KLD loss E[log(p(x|z))] - KLD(q(z|x) || p(z))
         if self.arguments['beta'] > 0:
             loss_kld = -0.5 * torch.sum(1 + var - mu.pow(2) - var.exp(), dim=-1)
-            temperature = torch.clamp(torch.Tensor([self.iter/self.max_temperature]), 0, 1)
+            temperature = torch.clamp(torch.Tensor([self.iter/self.max_temperature]), 0, 1).to(self.device)
         else:
             loss_kld = 0
             temperature = 0
@@ -137,6 +131,8 @@ class LinearAE(nn.Module):
         """
         I/O: (N, C, H, W) -> (N, C, H, W) or ((N, C, H, W), (N, latent_dim))
         """
+        self.device = x.device
+
         mu, var = self.forward_encoder(x)
         
         if self.arguments['beta'] > 0:

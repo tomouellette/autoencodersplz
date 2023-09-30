@@ -6,7 +6,7 @@ from torchvision.transforms import ToTensor
 from torch.utils.data import DataLoader
 
 from autoencodersplz.models import VQVAE
-from autoencodersplz.trainers import AutoencoderTrainer
+from autoencodersplz.trainers import Trainer
 
 class TestVQVAE(unittest.TestCase):
     def __init__(self, *args, **kwargs):
@@ -27,16 +27,15 @@ class TestVQVAE(unittest.TestCase):
         model = VQVAE(
             img_size = 28,
             in_chans = 1,
-            channels = [16],
-            blocks = [2],
-            codebook_dim = 256,
-            code_dim = 64,
+            channels = [4],
+            blocks = [1],
+            codebook_dim = 16,
+            code_dim = 4,
             beta = 0.25,            
             upsample_mode = 'nearest',
-            device = None
         )
 
-        trainer = AutoencoderTrainer(
+        trainer = Trainer(
             model,
             self.train_loader,
             self.test_loader,

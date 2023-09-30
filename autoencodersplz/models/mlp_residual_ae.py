@@ -23,7 +23,6 @@ class LinearResidualAE(nn.Module):
         kld_weight (float): optional value specifying additional weight on beta term
         max_temperature (int): # of loss updates until beta term reaches max value (i.e. temperature annealing of KLD loss with iter/max_temperature)
         upsample_mode (str): image upsampling mode for decoder
-        device (str): device to run model on (e.g. 'cpu', 'cuda:0')
     
     """
     def __init__(
@@ -39,20 +38,15 @@ class LinearResidualAE(nn.Module):
         beta: float = 0.1,
         kld_weight: Optional[float] = None,
         max_temperature: int = 1000,
-        device: Optional[str] = None
     ):
         super(LinearResidualAE, self).__init__()
         self.arguments = locals()
         self.img_size = to_tuple(img_size)
-
-        if isinstance(device, type(None)):
-            self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        else:
-            self.device = device
-        
         self.iter = 0
         self.in_chans = in_chans        
         self.max_temperature = max_temperature
+        
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         
         if not isinstance(kld_weight, float):
             self.kld_weight = beta * latent_dim / math.prod(self.img_size)
@@ -131,7 +125,7 @@ class LinearResidualAE(nn.Module):
         # KLD loss E[log(p(x|z))] - KLD(q(z|x) || p(z))
         if self.arguments['beta'] > 0:
             loss_kld = -0.5 * torch.sum(1 + var - mu.pow(2) - var.exp(), dim=-1)
-            temperature = torch.clamp(torch.Tensor([self.iter/self.max_temperature]), 0, 1)
+            temperature = torch.clamp(torch.Tensor([self.iter/self.max_temperature]), 0, 1).to(self.device)
         else:
             loss_kld = 0
             temperature = 0
@@ -145,6 +139,8 @@ class LinearResidualAE(nn.Module):
         """
         I/O: (N, C, H, W) -> (N, C, H, W) or ((N, C, H, W), (N, latent_dim))
         """
+        self.device = x.device
+
         mu, var = self.forward_encoder(x)
         
         if self.arguments['beta'] > 0:

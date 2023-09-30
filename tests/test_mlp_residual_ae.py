@@ -6,7 +6,7 @@ from torchvision.transforms import ToTensor
 from torch.utils.data import DataLoader
 
 from autoencodersplz.models import LinearResidualAE
-from autoencodersplz.trainers import AutoencoderTrainer
+from autoencodersplz.trainers import Trainer
 
 class TestLinearResidualAE(unittest.TestCase):
     def __init__(self, *args, **kwargs):
@@ -27,18 +27,17 @@ class TestLinearResidualAE(unittest.TestCase):
         model = LinearResidualAE(
             img_size = 28,
             in_chans = 1,
-            hidden_dim = [64, 64],
-            blocks = [2, 2],
+            hidden_dim = [16, 16],
+            blocks = [1, 1],
             dropout_rate = 0.0,
             with_batch_norm = False,
             latent_dim = 16,
             beta = 0.1,
             kld_weight = None,
             max_temperature = 1000,
-            device = None
         )
 
-        trainer = AutoencoderTrainer(
+        trainer = Trainer(
             model,
             self.train_loader,
             self.test_loader,
@@ -54,18 +53,17 @@ class TestLinearResidualAE(unittest.TestCase):
         model = LinearResidualAE(
             img_size = 28,
             in_chans = 1,
-            hidden_dim = [64, 64],
-            blocks = [2, 2],
+            hidden_dim = [16, 16],
+            blocks = [1, 1],
             dropout_rate = 0.0,
             with_batch_norm = False,
             latent_dim = 16,
             beta = 0.1,
             kld_weight = None,
             max_temperature = 1000,
-            device = None
         )
 
-        trainer = AutoencoderTrainer(
+        trainer = Trainer(
             model,
             self.train_loader,
             self.test_loader,
@@ -78,8 +76,8 @@ class TestLinearResidualAE(unittest.TestCase):
         trainer.fit()
 
     def tearDown(self):
-        # if os.path.exists('tests/train_linear_residual_ae_deterministic'):
-        #     shutil.rmtree('tests/train_linear_residual_ae_deterministic')
+        if os.path.exists('tests/train_linear_residual_ae_deterministic'):
+            shutil.rmtree('tests/train_linear_residual_ae_deterministic')
         
         if os.path.exists('tests/train_linear_residual_ae_stochastic'):
             shutil.rmtree('tests/train_linear_residual_ae_stochastic')

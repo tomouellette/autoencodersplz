@@ -31,6 +31,8 @@ class MAE(nn.Module):
         super(MAE, self).__init__()
         self.arguments = locals()
 
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        
         self.mask_ratio = mask_ratio
         self.decoder_embed_dim = decoder_embed_dim
 

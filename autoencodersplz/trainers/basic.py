@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader
 from .schedulers import CosineDecayWarmUp
 from .loggers import AutoencoderLogger
 
-class AutoencoderTrainer:
+class Trainer:
     """
     Trainer class for fitting autoencoder-based representation models
     
@@ -37,6 +37,7 @@ class AutoencoderTrainer:
             warmup_epochs: int = 10,
             learning_rate: float = 1.5e-4,
             betas: float = (0.9, 0.95),
+            weight_decay: float = 0.05,
             patience: int = 10,
             scheduler: str = 'plateau',
             save_backbone: bool = False,
@@ -62,10 +63,10 @@ class AutoencoderTrainer:
         
         # instantiate logger, optimizer, scheduler, and callbacks
         self.logger = AutoencoderLogger()
-        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=learning_rate, weight_decay=0.05, betas=betas)
+        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=learning_rate, weight_decay=weight_decay, betas=betas)
 
         if scheduler == 'cosine':
-            self.scheduler = CosineDecayWarmUp(self.optimizer, epochs=epochs, warmup_epochs=warmup_epochs, min_lr=learning_rate*0.1)
+            self.scheduler = CosineDecayWarmUp(self.optimizer, epochs=epochs, warmup_epochs=warmup_epochs, min_lr=learning_rate/50)
         elif scheduler == 'plateau':
             self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, patience=patience, factor=0.1)
         else:

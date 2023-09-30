@@ -11,6 +11,7 @@ A variety of autoencoder structured models for generative modeling and/or repres
   - [VQVAE](#vqvae)
   - [MAE](#mae)  
 - [Training](#training)
+  - [Basic](#basic-training)
 
 ## <span id='models'> Models </span>
 
@@ -159,18 +160,23 @@ loss, reconstructed_img = model(img)
 
 ## <span id='training'> Training </span>
 
+### <span id='basic-training'> Basic </span>
+
 <img width="100%" align='center' src='img/training_process.gif'/>
 
-```python
-from autoencodersplz.trainers import AutoencoderTrainer
+The `Trainer` class enables basic training using a single CPU or GPU for any model in the `autoencodersplz` library. The `Trainer` class also will save a visualization of the training process (`.gif`) if you provide a path to the `output_dir` argument.
 
-trainer = AutoencoderTrainer(
+```python
+from autoencodersplz.trainers import Trainer
+
+trainer = Trainer(
     model,
     train = train_dataloader,
     valid = valid_dataloader,
     epochs = 128,
     learning_rate = 5e-4,
     betas = (0.9, 0.95),
+    weight_decay = 0.05,
     patience = 10,
     scheduler = 'plateau',
     save_backbone = False,
@@ -182,4 +188,4 @@ trainer = AutoencoderTrainer(
 trainer.fit()
 ```
 
-By default, `AutoencoderTrainer` uses an `AdamW` optimizer and either a `CosineDecay` ('cosine') or `ReduceLROnPlateau` ('plateau') scheduler. If you want to use different optimizers or schedulers, just re-assign a new optimizer or scheduler to the `.optimizer` or `.scheduler` attributes (with `trainer.model.parameters()`) prior to calling `trainer.fit()`.
+By default, `Trainer` uses an `AdamW` optimizer and either a `CosineDecay` ('cosine') or `ReduceLROnPlateau` ('plateau') scheduler. If you want to use different optimizers or schedulers, just re-assign a new optimizer or scheduler to the `.optimizer` or `.scheduler` attributes (with `trainer.model.parameters()`) prior to calling `trainer.fit()`.

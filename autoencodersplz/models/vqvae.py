@@ -37,17 +37,13 @@ class VQVAE(nn.Module):
         metric: str = 'euclidean',
         beta: float = 0.25,
         upsample_mode: str = 'nearest',
-        device: Optional[str] = None
     ):
         super(VQVAE, self).__init__()
         self.arguments = locals()
         img_size = to_tuple(img_size)
-
-        if isinstance(device, type(None)):
-            self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        else:
-            self.device = device
         
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
         self.in_chans = in_chans
         
         # representations z|x
@@ -71,7 +67,7 @@ class VQVAE(nn.Module):
             channels = channels[::-1],
             blocks = blocks[::-1],
             upsample_mode = upsample_mode
-        )        
+        )
     
     def forward_encoder(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -116,6 +112,8 @@ class VQVAE(nn.Module):
         """
         I/O: (N, C, H, W) -> (N, C, H, W) or ((N, C, H, W), (N, latent_dim))
         """
+        self.device = x.device
+
         z = self.forward_encoder(x)
 
         loss_vq, z_q = self.forward_quantize(z)
