@@ -125,6 +125,27 @@ img = torch.rand(1, 3, 224, 224)
 loss, reconstructed_img = model(img)
 ```
 
+### <span id='fsqvae'> FSQVAE </span>
+
+A finite-scalar quantized variational autoencoder with a ResNet encoder and symmetric decoder
+
+[Finite Scalar Quantization: VQ-VAE Made Simple](https://arxiv.org/abs/2309.15505)
+
+```python
+model = FSQVAE(
+    img_size = 224,
+    in_chans = 3,
+    channels = [64, 128, 256, 512],
+    blocks = [2, 2, 2, 2],
+    levels = [8, 6, 5],
+    upsample_mode = 'nearest'
+)
+
+img = torch.rand(1, 3, 224, 224)
+
+loss, reconstructed_img = model(img)
+```
+
 ### <span id='mae'> MAE </span>
 
 A masked autoencoder with a vision transformer encoder and decoder
