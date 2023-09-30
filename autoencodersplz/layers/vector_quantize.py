@@ -4,18 +4,29 @@ import torch.nn.functional as F
 from einops import rearrange
 
 class VectorQuantizer(nn.Module):
-    """
-    A vector quantization layer for discretizing continuous latent vectors into discrete codes
+    """A vector quantization layer for discretizing continuous latent vectors into discrete codes
 
-    Args:
-        latent_dim (int): dimensionality of the input latent vectors (e.g. output of a convolutional encoder)
-        codebook_dim (int): number of vectors in the codebook
-        code_dim (int): dimensionality of the vectors in the codebook
-        codebook_init (str): initialization mode for the codebook vectors
-        metric (str): distance metric to use for finding nearest neighbours in the codebook
-        beta (float): weighting of the embedding loss term (commitment cost)
-    
+    Parameters
+    ----------
+    latent_dim : int
+        Dimensionality of the input latent vectors (e.g. output of a convolutional encoder), defaults to 256
+    codebook_dim : int
+        Number of vectors in the codebook, defaults to 512
+    code_dim : int
+        Dimensionality of the vectors in the codebook, defaults to 64
+    codebook_init : str
+        Initialization mode for the codebook vectors, defaults to 'uniform'
+    metric : str
+        Distance metric to use for finding nearest neighbours in the codebook, defaults to 'euclidean'
+    beta : float
+        Weighting of the embedding loss term (commitment cost), defaults to 0.25
+
+    Notes
+    -----
+    Replaced this basic VQ implementation with lucidrains vector-quantize-pytorch implementation
+    throughout the codebase. This implementation is kept for reference.
     """
+
     def __init__(
         self,
         latent_dim: int,
@@ -28,7 +39,7 @@ class VectorQuantizer(nn.Module):
         super(VectorQuantizer, self).__init__()
         self.arguments = locals()
 
-        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
         self.codebook_dim = codebook_dim
         self.code_dim = code_dim
@@ -44,21 +55,16 @@ class VectorQuantizer(nn.Module):
         """
         Initialize the values within the codebook
 
-        Args:
-            mode (str): initialization mode for the codebook vectors
-        
+        Parameters
+        ----------
+        mode : str
+            Initialization mode for the codebook vectors        
         """
         if mode == 'uniform':
             self.codebook.weight.data.uniform_(-1/self.codebook_dim, 1/self.codebook_dim).to(self.device)
     
     def _find_codebook_neighbours(self, z: torch.Tensor) -> torch.Tensor:
-        """
-        Find index of nearest neighbour in codebook for each latent vector
-
-        Args:
-            z (torch.Tensor): input latent vectors
-        
-        """
+        """Find index of nearest neighbour in codebook for each latent vector"""
         if self.metric == 'euclidean':
             distances = (
                 z.pow(2).sum(1).unsqueeze(1)
@@ -71,9 +77,7 @@ class VectorQuantizer(nn.Module):
         return indices
     
     def forward_encoder(self, z: torch.Tensor) -> torch.Tensor:
-        """
-        Generate discrete codes given continuous latent inputs
-        """
+        """Generate discrete codes given continuous latent inputs"""
         b, c, h, w = z.shape
         
         # Project from input latent vectors
@@ -88,13 +92,7 @@ class VectorQuantizer(nn.Module):
         return z, indices
     
     def forward_decoder(self, indices: torch.Tensor) -> torch.Tensor:
-        """
-        Generate quantized vectors from codebook indices
-
-        Args:
-            indices (torch.Tensor): indices of the nearest neighbour in the codebook for each latent vector
-        
-        """
+        """Generate quantized vectors from codebook indices"""
         # Quantization by decoding indices using the corresponding codebook vectors
         z_q = F.embedding(indices, self.codebook.weight)       
         
@@ -104,23 +102,13 @@ class VectorQuantizer(nn.Module):
         return z_q
     
     def forward_loss(self, z: torch.Tensor, z_q: torch.Tensor) -> torch.Tensor:
-        """
-        Calculate loss for training the codebook and encoded latent vectors
-
-        Args:
-            z (torch.Tensor): input latent vectors
-            z_q (torch.Tensor): quantized latent vectors
-        
-        """
+        """Calculate loss for training the input latent vectors and quantized latent vectors"""
         codebook_loss = F.mse_loss(z_q, z.detach())
         embedding_loss = F.mse_loss(z_q.detach(), z)       
         loss = codebook_loss + self.beta * embedding_loss
         return loss
     
     def forward(self, z: torch.Tensor) -> torch.Tensor:
-        """
-        Forward pass through the vector quantizer
-        """
         self.device = z.device
 
         if self.codebook_init:

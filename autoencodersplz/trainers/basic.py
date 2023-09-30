@@ -14,20 +14,40 @@ from .schedulers import CosineDecayWarmUp
 from .loggers import AutoencoderLogger
 
 class Trainer:
-    """
-    Trainer class for fitting autoencoder-based representation models
+    """Basic trainer class for fitting autoencoder-based representation models
     
-    Args:
-        autoencoder (nn.Module): autoencoder model to fit
-        train (DataLoader): training data
-        valid (DataLoader): validation data
-        epochs (int): maximum number of training epochs
-        learning_rate (float): learning rate for optimizer
-        patience (int): number of epochs to wait before reducing learning rate
-        show_plots (bool): if True, then show plots at end of each epoch
-        device (str): device to use for training; if None, then automatically detect GPU or CPU
-    
+    Parameters
+    ----------
+    autoencoder : nn.Module
+        Autoencoder nn.Module model to fit
+    train : DataLoader
+        Training data
+    valid : DataLoader
+        Validation data
+    epochs : int
+        Maximum number of training epochs, defaults to 128
+    learning_rate : float
+        Learning rate for optimizer, defaults to 1.5e-4
+    betas : float
+        Betas for AdamW optimizer, defaults to (0.9, 0.95)
+    weight_decay : float
+        Weight decay for AdamW optimizer, defaults to 0.05
+    patience : int
+        Number of epochs to wait before reducing learning rate, defaults to 25
+    scheduler : str
+        Learning rate scheduler ('cosine' or 'plateau'), defaults to 'plateau'
+    save_backbone : bool
+        If True, then save the encoder/backbone model, defaults to False
+    show_plots : bool
+        If True, then show plots at end of each epoch, defaults to False
+    output_dir : str
+        Output directory for saving training process, defaults to None
+    device : str
+        Device to use for training; if None, then automatically detect GPU or CPU, defaults to None
+    kwargs : dict
+        Not implemented
     """
+
     def __init__(
             self, 
             autoencoder: nn.Module,
@@ -38,7 +58,7 @@ class Trainer:
             learning_rate: float = 1.5e-4,
             betas: float = (0.9, 0.95),
             weight_decay: float = 0.05,
-            patience: int = 10,
+            patience: int = 25,
             scheduler: str = 'plateau',
             save_backbone: bool = False,
             show_plots: bool = False,
@@ -77,9 +97,7 @@ class Trainer:
                 os.makedirs(os.path.join(self.output_dir), exist_ok=True)
         
     def training_step(self, x: torch.Tensor) -> dict:        
-        """
-        Training step for a single batch of reconstruction and pseudo-label prediction
-        """
+        """Training step for a single batch of reconstruction and pseudo-label prediction"""
         loss, xhat = self.model(x)
         
         self.optimizer.zero_grad()
@@ -90,22 +108,24 @@ class Trainer:
     
     @torch.no_grad()
     def validation_step(self, x: torch.Tensor) -> dict:
-        """
-        Validation step for a single batch of reconstruction and pseudo-label prediction
-        """
+        """Validation step for a single batch of reconstruction and pseudo-label prediction"""
         loss, xhat = self.model(x)            
         return loss.item(), xhat
     
     @torch.no_grad()
     def generate_plots(self, x: torch.Tensor, xhat: torch.Tensor, epoch: int, losses: list) -> IO:
-        """
-        Plot a set of reconstructions and training progress end of epoch
+        """Plot a set of reconstructions and training progress at end of epoch
         
-        Args:
-            batch (tuple): a single batch
-            xhat (torch.Tensor): reconstructed images for all samples in validation set
-            labels (torch.Tensor): if self.with_labels is True, then ground-truth labels for each sample
-        
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input images
+        xhat : torch.Tensor
+            Reconstructed images
+        epoch : int
+            Current epoch
+        losses : list
+            List of losses for current and previous epoch
         """        
         # generate reconstructions and set shape to be compatible with matplotlib        
         x = x.detach().cpu().permute(0,2,3,1)
@@ -200,13 +220,13 @@ class Trainer:
             plt.savefig(os.path.join(self.output_dir, 'training_plots/', f'epoch_{epoch+1}.png'), dpi=100)
             plt.close()
     
-    def generate_gif(self) -> IO: 
-        """
-        Converts all training plots into a single gif
+    def generate_gif(self) -> None: 
+        """Converts all training plots into a single gif
 
-        Returns:
-            IO: saves a gif of training process to self.output_dir
-        
+        Returns
+        -------
+        None
+            Saves a gif of training process to self.output_dir        
         """        
         # aggregate all the images into a list
         images = []
@@ -223,9 +243,7 @@ class Trainer:
         imageio.v3.imwrite(os.path.join(self.output_dir, 'training_process.gif'), images, loop=1000)
         
     def _save_model(self) -> IO:
-        """
-        Saves the trained pytorch model
-        """
+        """Saves the trained pytorch model"""
         config = {}
         config['arguments'] = self.model.arguments
         config['model'] = str(self.model.__class__)[8:-2].split('.')[-1]
@@ -233,9 +251,7 @@ class Trainer:
         torch.save(config, os.path.join(self.output_dir, 'trained_model.' + config['model'] + '.pt'))
     
     def _save_encoder(self) -> IO:
-        """
-        Saves the trained backbone/encoder model
-        """
+        """Saves the trained backbone/encoder model"""
         config = {}
         config['arguments'] = self.model.encoder.arguments
         config['model'] = str(self.model.encoder.__class__)[8:-2].split('.')[-1]
@@ -243,15 +259,17 @@ class Trainer:
         torch.save(config, os.path.join(self.output_dir, 'trained_backbone.' + config['model'] + '.pt'))
     
     def fit(self, silent: bool = False) -> None:
-        """
-        Fit the model
+        """Fit the model
 
-        Args:
-            silent (bool, optional): if True, suppress printing training progress
+        Parameters
+        ----------
+        silent : bool, optional
+            If True, suppress printing training progress, by default False
         
-        Returns:
-            None: stores models in .model attributes and, if specified, saves trained model to self.output_dir
-        
+        Returns
+        -------
+        None
+            Stores models in .model attributes and, if specified, saves trained model to self.output_dir        
         """        
         losses = [[], []]
         for epoch in tqdm(range(self.epochs), desc='Epoch'):

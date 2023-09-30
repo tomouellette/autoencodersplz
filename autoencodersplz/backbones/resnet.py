@@ -5,22 +5,29 @@ import torch.nn.functional as F
 from ..layers.dimensions import size_conv2d, size_maxpool2d
 
 class ResidualBlock(nn.Module):
+    """Residual block specifying a shortcut connection with element-wise addition
+    
+    Parameters
+    ----------
+    in_chans : int
+        Number of input channels
+    out_chans : int
+        Number of output channels
+    change_dim : bool
+        Change the dimensionality of convolution to enable addition with input, by default False
+    stride : int
+        Stride in the first convolution layer and in 1x1 identity convolution if used, by default 1
+    
+    Notes
+    -----
+    output = F(input, weights_i) + input
+    
+    References
+    ----------
+    1. K. He, X. Zhang, S. Ren, J. Sun, "Deep Residual Learning for Image Recognition"
+       https://arxiv.org/abs/1512.03385. CVPR 2016.
     """
-    Residual block specifying a shortcut connection with element-wise addition
-    
-    Args:
-        in_chans (int): number of input channels
-        out_chans (int): number of output channels
-        change_dim (int): change the dimensionality of convolution to enable addition with input
-        stride (int): stride in the first convolution layer and in 1x1 identity convolution if used
-    
-    Notes:
-        | output = F(input, weights_i) + input
-    
-    References:
-        | "Deep Residual Learning for Image Recognition", He et al. 2016
-    
-    """
+
     def __init__(self, in_chans: int, out_chans: int, change_dim: bool = False, stride: int = 1):
         super(ResidualBlock, self).__init__()
         self.convolutions = nn.Sequential(
@@ -38,28 +45,37 @@ class ResidualBlock(nn.Module):
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
-        I/O: (N, C, H, W) -> (N, C, H, W) or (N, C, H/2, W/2) | change_dim
+        Notes
+        -----
+        The dimensionality change from input to output follows (N, C, H, W) to 
+        (N, C, H, W) if not change_dim else (N, C, H/stride, W/stride)
         """
         y = self.convolutions(x)
         x = self.identity(x)
         return F.relu(y + x)
 
 class ResNet(nn.Module):
-    """
-    A residual neural network with default block structure
+    """A residual neural network with default block structure
     
-    Args:
-        img_size (tuple): dimensionality of input images
-        blocks (list): number of residual blocks in a given residual layer
-        channels (list): number of channels for each residual block in a given residual layer
+    Parameters
+    ----------
+    img_size : tuple
+        Dimensionality of input images
+    channels : list
+        Number of channels for each residual block in a given residual layer, by default [64, 128, 256, 512]
+    blocks : list
+        Number of residual blocks in a given residual layer, by default [2, 2, 2, 2]
         
-    Notes:
-        | ResNet-18 can be specified with n_channels = [64, 128, 256, 512] and n_blocks = [2, 2, 2, 2]
+    Notes
+    -----
+    ResNet-18 can be specified with n_channels = [64, 128, 256, 512] and n_blocks = [2, 2, 2, 2].
     
-    References:
-        | "Deep Residual Learning for Image Recognition", He et al. 2016
-    
+    References
+    ----------
+    1. K. He, X. Zhang, S. Ren, J. Sun, "Deep Residual Learning for Image Recognition"
+       https://arxiv.org/abs/1512.03385. CVPR 2016.
     """
+
     def __init__(
             self, 
             img_size: tuple, 
@@ -114,7 +130,9 @@ class ResNet(nn.Module):
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
-        I/O: (N, C, H, W) -> (N, n_output)
+        Notes
+        -----
+        Input to output dimensionality follows: (N, C, H, W) -> (N, n_output)
         """
         self.device = x.device
         x = self.input(x)
@@ -122,22 +140,24 @@ class ResNet(nn.Module):
         return x
     
 class InvertedResidualBlock(nn.Module):
-    """
-    An inverted residual block for symmetric decoding of latent codes from a ResNet encoder
+    """An inverted residual block for symmetric decoding of latent codes from a ResNet encoder
     
-    Args:
-        in_chans (int): number of input channels
-        out_chans (int): number of output channels
-        change_dim (int): change the dimensionality of convolution to enable addition with input
-        stride (int): stride in the first convolution layer and in 1x1 identity convolution if used
-        output_padding (int): output padding for the first convolution layer or the identity convolution if used
+    Parameters
+    ----------
+    in_chans : int
+        Number of input channels
+    out_chans : int
+        Number of output channels
+    change_dim : bool
+        Change the dimensionality of convolution to enable addition with input, by default False
+    stride : int
+        Stride in the first convolution layer and in 1x1 identity convolution if used, by default 1
+    output_padding : int
+        Output padding for the first convolution layer or the identity convolution if used, by default 0
     
-    Notes:
-        | output = F(input, weights_i) + input
-    
-    References:
-        | "Deep Residual Learning for Image Recognition", He et al. 2016
-    
+    Notes
+    -----
+    output = F(input, weights_i) + input
     """
     def __init__(
             self, 
@@ -170,28 +190,30 @@ class InvertedResidualBlock(nn.Module):
         return F.relu(y + x)
 
 class InvertedResNet(nn.Module):
-    """
-    An inverted residual neural network for symmetric decoding
+    """An inverted residual neural network for symmetric decoding
     
-    Args:
-        img_size (tuple): dimensionality of input images
-        output_chans (int): number of output channels
-        blocks (list): number of residual blocks in a given residual layer
-        channels (list): number of channels for each residual block in a given residual layer
-        upsample_mode (str): upsampling interpolation mode for rescaling input matrix
-        
-    Notes:
-        | ResNet-18 can be specified with n_channels = [64, 128, 256, 512] and n_blocks = [2, 2, 2, 2]
+    Parameters
+    ----------
+    img_size : tuple
+        Dimensionality of input images
+    output_chans : int
+        Number of output channels
+    blocks : list
+        Number of residual blocks in a given residual layer, by default [2, 2, 2, 2]
+    channels : list
+        Number of channels for each residual block in a given residual layer, by default [64, 128, 256, 512]
+    upsample_mode : str
+        Upsampling interpolation mode for rescaling input matrix, by default 'nearest'
     
-    References:
-        | "Deep Residual Learning for Image Recognition", He et al. 2016
-    
+    Notes
+    -----
+    Inverted ResNet-18 can be specified with n_channels = [512, 256, 128, 64] and n_blocks = [2, 2, 2, 2].
     """
     def __init__(
             self, 
             img_size: tuple,
             output_chans: int = 3,
-            channels: Union[list, tuple] = (64, 128, 256, 512), 
+            channels: Union[list, tuple] = (512, 256, 128, 64),
             blocks: Union[list, tuple] = (2, 2, 2, 2),
             upsample_mode: str = 'nearest'
         ):
@@ -236,7 +258,9 @@ class InvertedResNet(nn.Module):
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
-        I/O: (N, C, H, W) -> (N, n_output)
+        Notes
+        -----
+        Input to output dimensionality follows (N, n_input) -> (N, C, H, W)
         """
         self.device = x.device
         x = self.input(x)

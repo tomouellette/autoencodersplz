@@ -3,25 +3,43 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from typing import Tuple, Optional, Union
-from ..backbones.resnet import ResNet, InvertedResNet
+
 from ..layers.dimensions import to_tuple
+from ..backbones.resnet import ResNet, InvertedResNet
 
 class ConvResidualAE(nn.Module):
-    """
-    A determinstic or variational autoencoder with a resnet backbone/encoder
+    """A determinstic or variational autoencoder with a resnet backbone/encoder
+
+    Parameters
+    ----------
+    img_size : Union[Tuple[int, int], int], optional
+        The size of the input image, by default 224
+    in_chans : int, optional
+        The number of input channels, by default 3
+    channels : list, optional
+        The number of channels in each block of the encoder/decoder, by default [64,128,256,512]
+    blocks : list, optional
+        The number of blocks in each stage of the encoder/decoder, by default [2, 2, 2, 2]
+    latent_dim : int, optional
+        The dimension of the latent space, by default 16
+    beta : float, optional
+        The weight of the KL divergence term, by default 0.1
+    kld_weight : Optional[float], optional
+        Additional weight on the KL divergence term, by default None
+    max_temperature : int, optional
+        The number of iterations/batches until the KL divergence term reaches its maximum value,
+        by default 1000
+    upsample_mode : str, optional
+        The mode of upsampling, by default 'nearest'
     
-    Args:
-        img_size (tuple): size of input matrix
-        in_chans (int): number of channels in input image
-        channels (list): number of channels in each layer of the resnet encoder
-        blocks (list): number of residual blocks in each layer of the resnet encoder
-        latent_dim (int): size of latent space
-        beta (float): if beta is a positive non-zero value, then model converts from deterministic to variational autoencoder
-        kld_weight (float): optional value specifying additional weight on beta term
-        max_temperature (int): # of loss updates until beta term reaches max value (i.e. temperature annealing of KLD loss with iter/max_temperature)
-        upsample_mode (str): image upsampling mode for decoder
-    
+    References
+    ----------
+    1. K. He, X. Zhang, S. Ren, J. Sun, "Deep Residual Learning for Image Recognition"
+       https://arxiv.org/abs/1512.03385. CVPR 2016.
+    2. D.P. Kingma & M. Welling, "Auto-Encoding Variational Bayes". 
+       https://arxiv.org/abs/1312.6114. ICLR 2014.
     """
+
     def __init__(
         self, 
         img_size: Union[Tuple[int, int], int] = 224,
@@ -38,7 +56,7 @@ class ConvResidualAE(nn.Module):
         self.arguments = locals()
         img_size = to_tuple(img_size)
         
-        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
         self.iter = 0
         self.in_chans = in_chans        
@@ -67,38 +85,26 @@ class ConvResidualAE(nn.Module):
         )        
     
     def forward_encoder(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Encode the input data into a latent space (x -> z)
-
-        I/O: (N, C, H, W) -> (2, N, latent_dim)
-        """        
+        """Encode the input data into a latent space (x -> z)"""        
         z = self.encoder(x).flatten(1)        
         mu = self.latent_mu(z)
         var = self.latent_var(z)        
         return mu, var
 
     def forward_decoder(self, z: torch.Tensor) -> torch.Tensor:
-        """
-        Decode the latent representation into the original space (z -> x)
-
-        I/O: (N, latent_dim) -> (N, C, H, W)
-        """
+        """Decode the latent representation into the original space (z -> x)"""
         z = self.decoder_input(z).view(-1, *self.encoder.output_dim)
         xhat = self.decoder(z)
         return xhat
     
     def _reparameterize(self, mu: torch.Tensor, var: torch.Tensor) -> torch.Tensor:
-        """
-        Reparameterization trick to enable backpropagation through random/stochastic variable
-        """
+        """Reparameterization trick to enable backpropagation through random/stochastic variable"""
         std = torch.exp(0.5 * var)
         eps = torch.randn_like(std)
         return eps * std + mu
     
     def forward_loss(self, x: torch.Tensor, xhat: torch.Tensor, mu: torch.Tensor, var: torch.Tensor) -> torch.Tensor:
-        """
-        Compute the ELBO = E[log(p(x|z))] - KLD(q(z|x) || p(z)) and reconstruction p(x'|z) loss
-        """
+        """Compute the ELBO = E[log(p(x|z))] - KLD(q(z|x) || p(z)) and reconstruction p(x'|z) loss"""
         self.iter += 1
         
         # reconstruction loss L(x, x_reconstruct)
@@ -122,9 +128,6 @@ class ConvResidualAE(nn.Module):
         return loss
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        I/O: (N, C, H, W) -> (N, C, H, W) or ((N, C, H, W), (N, latent_dim))
-        """
         self.device = x.device
 
         mu, var = self.forward_encoder(x)

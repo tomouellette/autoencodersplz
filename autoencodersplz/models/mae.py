@@ -6,10 +6,51 @@ from einops import repeat, rearrange
 from typing import Union, Tuple, Optional, Callable
 from timm.models.vision_transformer import Block, Mlp
 
-from autoencodersplz.layers.dimensions import to_tuple
+from ..layers.dimensions import to_tuple
 from ..backbones.vision_transformer import vision_transformer
 
 class MAE(nn.Module):
+    """A masked autoencoder with a vision transformer backbone/encoder and decoder
+
+    Parameters
+    ----------
+    img_size : Union[int, Tuple[int, int]], optional
+        The size of the input image, by default 224
+    patch_size : Union[int, Tuple[int, int]], optional
+        The size of the masked patches, by default 16
+    in_chans : int, optional
+        The number of input channels, by default 3
+    mask_ratio : float, optional
+        The ratio of masked patches, by default 0.5
+    embed_dim : int, optional
+        The dimension of the embedding, by default 768
+    depth : int, optional
+        The number of transformer blocks, by default 12
+    num_heads : int, optional
+        The number of attention heads, by default 12
+    mlp_ratio : float, optional
+        The ratio of the hidden dimension to the embedding dimension, by default 4
+    pre_norm : bool, optional
+        Whether to apply layer normalization before the attention layer, by default False
+    decoder_embed_dim : int, optional
+        The dimension of the decoder embedding, by default 768
+    decoder_depth : int, optional
+        The number of decoder transformer blocks, by default 12
+    decoder_num_heads : int, optional
+        The number of decoder attention heads, by default 12
+    norm_layer : Optional[Callable], optional
+        The normalization layer, by default nn.LayerNorm
+    patch_norm_layer : Optional[Callable], optional
+        The patch normalization layer, by default nn.LayerNorm
+    post_norm_layer : Optional[Callable], optional
+        The post-normalization layer, by default nn.LayerNorm
+    
+    References
+    ----------
+    1. K. He, X. Chen, S. Xie, Y. Li, P. Dollár, R. Girshick, "Masked Autoencoders Are
+       Scalable Vision Learners". https://arxiv.org/abs/2111.06377. CVPR 2022.
+    """
+
     def __init__(
         self,
         img_size: Union[int, Tuple[int, int]] = 224,
@@ -31,7 +72,7 @@ class MAE(nn.Module):
         super(MAE, self).__init__()
         self.arguments = locals()
 
-        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
         self.mask_ratio = mask_ratio
         self.decoder_embed_dim = decoder_embed_dim

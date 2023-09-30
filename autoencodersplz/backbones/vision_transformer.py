@@ -39,35 +39,81 @@ def vision_transformer(
         *args,
         **kwargs
     ):
-    """
-    Modification of the timm VisionTransformer class for custom patch embedding function
+    """Modification of the timm VisionTransformer class for custom patch embedding function
 
-    Args:
-        img_size: input image size
-        patch_size: patch size
-        in_chans: number of image input channels
-        num_classes: number of classes for classification head
-        global_pool: type of global pooling for final sequence (default: 'token')
-        embed_dim: transformer embedding dimension
-        depth: depth of transformer
-        num_heads: number of attention heads
-        mlp_ratio: ratio of mlp hidden dim to embedding dim
-        qkv_bias: enable bias for qkv projections if True
-        init_values: layer-scale init values (layer-scale enabled if not None)
-        class_token: use class token
-        fc_norm: pre head norm after pool (instead of before), if None, enabled when global_pool == 'avg'
-        drop_rate: head dropout rate
-        pos_drop_rate: position embedding dropout rate
-        attn_drop_rate: attention dropout rate
-        drop_path_rate: stochastic depth rate
-        weight_init: weight initialization scheme
-        embed_layer: patch embedding layer
-        norm_layer: normalization layer
-        patch_norm_layer: patch normalization layer
-        post_norm_layer: post normalization layer
-        act_layer: mlp activation layer
-        block_fn: transformer block layer
+    Parameters
+    ----------
+    img_size : Union[int, Tuple[int, int]]
+        Input image size, defaults to 224
+    patch_size : Union[int, Tuple[int, int]]
+        Patch size, defaults to 16
+    in_chans : int
+        Number of input channels, defaults to 3
+    num_classes : int
+        Number of output classes, defaults to 1
+    global_pool : str
+        Type of global pooling for final sequence, defaults to ''
+    embed_dim : int
+        Embedding dimension, defaults to 768
+    depth : int
+        Depth of transformer, defaults to 12
+    num_heads : int
+        Number of attention heads, defaults to 12
+    mlp_ratio : float
+        Ratio of mlp hidden dim to embedding dim, defaults to 4.
+    qkv_bias : bool
+        Enable bias for qkv projection, defaults to True
+    qk_norm : bool
+        Enable qk norm, defaults to False
+    init_values : Optional[float]
+        Layer-scale init values, defaults to None
+    class_token : bool
+        Use class token, defaults to True
+    no_embed_class : bool
+        Do not embed class token, defaults to False
+    pre_norm : bool
+        Pre normalization, defaults to False
+    fc_norm : Optional[bool]
+        Apply normalization to fc output, defaults to None
+    drop_rate : float
+        Dropout rate, defaults to 0.
+    pos_drop_rate : float
+        Position embedding dropout rate, defaults to 0.
+    patch_drop_rate : float
+        Patch embedding dropout rate, defaults to 0.
+    proj_drop_rate : float
+        Projection dropout rate, defaults to 0.
+    attn_drop_rate : float
+        Attention dropout rate, defaults to 0.
+    drop_path_rate : float
+        Stochastic depth rate, defaults to 0.
+    weight_init : str
+        Weight initialization scheme, defaults to ''
+    norm_layer : Optional[Callable]
+        Normalization layer, defaults to None
+    patch_norm_layer : Optional[Callable]
+        Patch normalization layer, defaults to None
+    post_norm_layer : Optional[Callable]
+        Post normalization layer, defaults to None
+    act_layer : Optional[Callable]
+        MLP activation layer, defaults to None
+    block_fn : Callable
+        Transformer block layer, defaults to Block
+    mlp_layer : Callable
+        MLP layer, defaults to Mlp
+    *args : list
+        Not implemented
+    **kwargs : dict
+        Not implemented
     
+    References
+    ----------
+    1. A. Dosovitskiy, L. Beyer, A. Kolesnikov, D. Weissenborn, X. Zhai, 
+       T. Unterthiner, M. Dehghani, M. Minderer, G. Heigold, S. Gelly, J. Uszkoreit, 
+       N. Houlsby, "An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale".
+       https://arxiv.org/abs/2010.11929. ICLR 2021.
+    2. https://github.com/huggingface/pytorch-image-models: the vision transformer implementation
+       was sourced from Ross Wightman's timm library.
     """
     arguments = locals()
 

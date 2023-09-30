@@ -3,13 +3,14 @@ import warnings
 from torch.optim.lr_scheduler import _LRScheduler
 
 class CosineDecayWarmUp(_LRScheduler):
-    """
-    Implementing cosine decay with warmup learning rate scheduling using torch base class  
+    """Cosine decay with warmup learning rate scheduling implemented using torch base class  
 
-    Args:
-        optimizer (torch.optim.Optimizer): instantiated torch optimizer
-        epochs (int): maximum number of training epochs
-    
+    Parameters
+    ----------
+    optimizer : torch.optim.Optimizer
+        Instantiated torch optimizer
+    epochs : int
+        Maximum number of training epochs    
     """
     def __init__(
             self, 
@@ -43,9 +44,7 @@ class CosineDecayWarmUp(_LRScheduler):
                     for base_lr in self.base_lrs]
 
     def step(self, epoch=None):
-        """
-        Step could be called after every batch update
-        """
+        """Step can be called after every batch update or after every epoch"""
         if epoch is None and self.last_epoch < 0:
             epoch = 0
         

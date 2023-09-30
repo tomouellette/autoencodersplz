@@ -2,25 +2,30 @@ import torch
 import torch.nn as nn
 
 class MLP(nn.Module):
-    """
-    A multi-layer (fully-connected) perceptron
+    """A multi-layer (fully-connected) perceptron
     
-    Args:
-        input_dim (int): dimension of input features
-        hidden_layers (list): list of integers specifying the number of units in each hidden layer
-        output_dim (int): dimension of output features
-        dropout_rate (float): dropout rate
-        activation (torch.nn.modules.activation): pytorch activation function
-    
+    Parameters
+    ----------
+    input_dim : int
+        Dimension of input features
+    hidden_layers : list
+        List of integers specifying the number of units in each hidden layer
+    output_dim : int
+        Dimension of output features
+    dropout_rate : float
+        Dropout rate, defaults to 0
+    activation : torch.nn.modules.activation
+        Pytorch activation function, defaults to nn.ReLU    
     """
+
     def __init__(
-            self, 
-            input_dim: int, 
-            hidden_layers: list, 
-            output_dim: int, 
-            dropout_rate: float = 0, 
-            activation = nn.ReLU
-        ):
+        self, 
+        input_dim: int, 
+        hidden_layers: list, 
+        output_dim: int, 
+        dropout_rate: float = 0, 
+        activation = nn.ReLU
+    ):
         super(MLP, self).__init__()
         self.arguments = locals()
 
@@ -54,23 +59,27 @@ class MLP(nn.Module):
         return self.layers(x)
 
 class LinearResidualBlock(nn.Module):
-    """
-    A residual block for a multi-layer perceptron
+    """A residual block for a multi-layer perceptron
 
-    Args:
-        input_dim (int): input dimension
-        dropout_rate (float): dropout rate
-        with_batch_norm (bool): whether to use batch normalization
-        zero_initialization (bool): whether to initialize weights and biases to zero
-    
+    Parameters
+    ----------
+    input_dim : int
+        Dimension of input features
+    dropout_rate : float
+        Dropout rate, defaults to 0
+    with_batch_norm : bool
+        Whether to use batch normalization, defaults to False
+    zero_initialization : bool
+        Whether to initialize weights and biases to zero, defaults to False    
     """
+
     def __init__(
-            self,
-            input_dim: int,
-            dropout_rate = 0.0,
-            with_batch_norm: bool = False,
-            zero_initialization: bool = False,
-        ):
+        self,
+        input_dim: int,
+        dropout_rate = 0.0,
+        with_batch_norm: bool = False,
+        zero_initialization: bool = False,
+    ):
         super().__init__()        
         layers = []
         for _ in range(2):
@@ -91,31 +100,37 @@ class LinearResidualBlock(nn.Module):
         y = self.layers(x)
         return y + x
 
-
 class LinearResidualNet(nn.Module):
-    """
-    A multi-layer perceptron with skip connections
+    """A multi-layer perceptron with skip connections
 
-    Args:
-        input_dim (int): input dimension
-        output_dim (int): output dimension
-        hidden_dim (list): list of hidden layer dimensions
-        blocks (list): list of number of residual blocks per hidden layer
-        dropout_rate (float): dropout rate
-        with_batch_norm (bool): whether to use batch normalization in residual blocks
-        zero_initialization (bool): whether to initialize weights and biases to zero
-    
+    Parameters
+    ----------
+    input_dim : int
+        Dimension of input features
+    output_dim : int
+        Dimension of output features
+    hidden_dim : list
+        List of integers specifying the number of units in each hidden layer, defaults to [64, 64]
+    blocks : list
+        List of integers specifying the number of residual blocks per hidden layer, defaults to [2, 2]
+    dropout_rate : float
+        Dropout rate, defaults to 0
+    with_batch_norm : bool
+        Whether to use batch normalization, defaults to False
+    zero_initialization : bool
+        Whether to initialize weights and biases to zero, defaults to False
     """
+
     def __init__(
-            self,
-            input_dim: int,
-            output_dim: int,
-            hidden_dim: list = [64, 64],
-            blocks: int = [2, 2],
-            dropout_rate: float = 0.0,
-            with_batch_norm: bool = False,
-            zero_initialization: bool = False,
-        ):        
+        self,
+        input_dim: int,
+        output_dim: int,
+        hidden_dim: list = [64, 64],
+        blocks: int = [2, 2],
+        dropout_rate: float = 0.0,
+        with_batch_norm: bool = False,
+        zero_initialization: bool = False,
+    ):
         super(LinearResidualNet, self).__init__()
         self.arguments = locals()
         assert len(blocks) == len(hidden_dim), "n_blocks must equal len(hidden_dim)"

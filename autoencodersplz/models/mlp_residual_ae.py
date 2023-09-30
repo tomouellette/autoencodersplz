@@ -3,28 +3,47 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from typing import Tuple, Optional, Union
+
 from ..backbones.mlp import LinearResidualNet
 from ..layers.dimensions import to_tuple
 
 class LinearResidualAE(nn.Module):
-    """
-    A fully connected autoencoder with a linear residual network backbone and decoder
+    """A fully connected autoencoder with a linear residual network backbone and decoder
     
-    Args:
-        img_size (tuple): size of input matrix
-        in_chans (int): number of channels in input image
-        hidden_dim (list): list of hidden layer dimensions
-        blocks (list): list of number of residual blocks per hidden layer
-        dropout_rate (float): dropout rate
-        with_batch_norm (bool): whether to use batch normalization in residual blocks
-        zero_initialization (bool): whether to initialize weights and biases to zero
-        latent_dim (int): size of latent space
-        beta (float): if beta is a positive non-zero value, then model converts from deterministic to variational autoencoder
-        kld_weight (float): optional value specifying additional weight on beta term
-        max_temperature (int): # of loss updates until beta term reaches max value (i.e. temperature annealing of KLD loss with iter/max_temperature)
-        upsample_mode (str): image upsampling mode for decoder
+    Parameters
+    ----------
+    img_size : Union[Tuple[int, int], int], optional
+        The size of the input image, by default 224
+    in_chans : int, optional
+        The number of input channels, by default 3
+    hidden_dim : list, optional
+        The number of hidden units in each layer of the encoder/decoder, by default [64, 64]
+    blocks : list, optional
+        The number of blocks in each stage of the encoder/decoder, by default [2, 2]
+    dropout_rate : float, optional
+        The dropout rate, by default 0.0
+    with_batch_norm : bool, optional
+        Whether to use batch normalization, by default False
+    zero_initialization : bool, optional
+        Whether to initialize weights and biases to zero, by default False
+    latent_dim : int, optional
+        The dimension of the latent space, by default 16
+    beta : float, optional
+        The weight of the KL divergence term, by default 0.1
+    kld_weight : Optional[float], optional
+        Additional weight on the KL divergence term, by default None
+    max_temperature : int, optional
+        The number of iterations/batches until the KL divergence term reaches its maximum value,
+        by default 1000
     
+    References
+    ----------
+    1. A. Emin Orhan, X. Pitkow, "Skip Connections Eliminate Singularities"
+       https://arxiv.org/abs/1701.09175. ICLR 2018.
+    2. D.P. Kingma & M. Welling, "Auto-Encoding Variational Bayes". 
+       https://arxiv.org/abs/1312.6114. ICLR 2014.
     """
+    
     def __init__(
         self, 
         img_size: Union[Tuple[int, int], int] = 224,
@@ -46,7 +65,7 @@ class LinearResidualAE(nn.Module):
         self.in_chans = in_chans        
         self.max_temperature = max_temperature
         
-        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
         if not isinstance(kld_weight, float):
             self.kld_weight = beta * latent_dim / math.prod(self.img_size)
@@ -92,27 +111,19 @@ class LinearResidualAE(nn.Module):
         return mu, var
 
     def forward_decoder(self, z: torch.Tensor) -> torch.Tensor:
-        """
-        Decode the latent representation into the original space (z -> x)
-
-        I/O: (N, latent_dim) -> (N, C, H, W)
-        """
+        """Decode the latent representation into the original space (z -> x)"""
         z = self.decoder_input(z)
         xhat = self.decoder(z).view(-1, self.in_chans, *self.img_size)
         return xhat
     
     def _reparameterize(self, mu: torch.Tensor, var: torch.Tensor) -> torch.Tensor:
-        """
-        Reparameterization trick to enable backpropagation through random/stochastic variable
-        """
+        """Reparameterization trick to enable backpropagation through random/stochastic variable"""
         std = torch.exp(0.5 * var)
         eps = torch.randn_like(std)
         return eps * std + mu
     
     def forward_loss(self, x: torch.Tensor, xhat: torch.Tensor, mu: torch.Tensor, var: torch.Tensor) -> torch.Tensor:
-        """
-        Compute the ELBO = E[log(p(x|z))] - KLD(q(z|x) || p(z)) and reconstruction p(x'|z) loss
-        """
+        """Compute the ELBO = E[log(p(x|z))] - KLD(q(z|x) || p(z)) and reconstruction p(x'|z) loss"""
         self.iter += 1
         
         # reconstruction loss L(x, x_reconstruct)
@@ -136,9 +147,6 @@ class LinearResidualAE(nn.Module):
         return loss
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        I/O: (N, C, H, W) -> (N, C, H, W) or ((N, C, H, W), (N, latent_dim))
-        """
         self.device = x.device
 
         mu, var = self.forward_encoder(x)

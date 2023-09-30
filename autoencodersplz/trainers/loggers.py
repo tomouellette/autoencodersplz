@@ -1,19 +1,11 @@
+"""Classes for logging training and/or validation results"""
+
 import logging
 import pandas as pd
 import tqdm as tqdm_module
 
-"""
-Classes for logging training and/or validation results
-"""
-
 class TqdmLoggingHandler(logging.Handler):
-    """
-    Enables writing to output without destroying tqdm progress bars
-    
-    References:
-        | https://stackoverflow.com/questions/38543506
-    
-    """
+    """Enables writing to output without destroying tqdm progress bars"""
     def __init__(self, level=logging.NOTSET):
         super().__init__(level)
 
@@ -26,9 +18,8 @@ class TqdmLoggingHandler(logging.Handler):
             self.handleError(record)
                         
 class AutoencoderLogger:
-    """
-    Logs the validation results during training    
-    """
+    """Logs the validation results during training"""
+
     def __init__(self):
         self.log = {
             'epoch': [],
@@ -41,9 +32,7 @@ class AutoencoderLogger:
         self.writer.addHandler(TqdmLoggingHandler())
         
     def tally(self, batch_idx: int, losses: tuple):
-        """
-        Tally the losses for the current epoch's validation step
-        """
+        """Tally the losses for the current epoch's validation step"""
         if batch_idx == 0:
             self.n = 0
             self.losses = [0 for _ in losses]
@@ -52,9 +41,7 @@ class AutoencoderLogger:
         self.losses = [self.losses[i] + losses[i] for i in range(len(losses))]
     
     def update(self, epoch: int):
-        """
-        Update the log with the current epoch's validation results
-        """
+        """Update the log with the current epoch's validation results"""
         self.log['epoch'].append(epoch)
         self.log['loss'].append(self.losses[0]/self.n)
         
