@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from typing import Tuple, Union
+from typing import Tuple, Union, Optional
 from vector_quantize_pytorch import VectorQuantize
 
 from ..layers.dimensions import to_tuple
@@ -56,6 +56,7 @@ class VQVAE(nn.Module):
         kmeans_init: bool = True,
         commitment_weight: float = 0.5,
         upsample_mode: str = 'nearest',
+        latent_dim: Optional[int] = None,
         vq_kwargs: dict = {},
     ):
         super(VQVAE, self).__init__()
@@ -70,9 +71,15 @@ class VQVAE(nn.Module):
         self.encoder = ResNet((in_chans, *img_size), channels=channels, blocks=blocks)
         
         # quantization z_q|z
-        latent_dim, _, _ = self.encoder.output_dim                        
-        self.project_in = nn.Conv2d(latent_dim, codebook_dim, kernel_size=1)
-        self.project_out = nn.Conv2d(codebook_dim, latent_dim, kernel_size=1)
+        self.latent_channels, _, _ = self.encoder.output_dim
+
+        if isinstance(latent_dim, int):
+            self.project_in = nn.Conv2d(self.latent_channels, latent_dim, kernel_size=1)
+            self.project_out = nn.Conv2d(latent_dim, self.latent_channels, kernel_size=1)
+        else:
+            latent_dim = self.latent_channels
+            self.project_in = nn.Identity()
+            self.project_out = nn.Identity()
 
         self.vector_quantize = VectorQuantize(
             dim = latent_dim,
@@ -101,10 +108,10 @@ class VQVAE(nn.Module):
     
     def forward_quantize(self, z: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """Quantize the latent representation (z -> z_q)"""
-        z = self.project_in(z)       
-        z_q, _, loss_vq = self.vector_quantize(z)
+        z = self.project_in(z)
+        z_q, codebook, loss_vq = self.vector_quantize(z)
         z_q = self.project_out(z_q)
-        return loss_vq, z_q
+        return loss_vq, z_q, codebook
 
     
     def forward_decoder(self, z_q: torch.Tensor) -> torch.Tensor:
@@ -127,7 +134,7 @@ class VQVAE(nn.Module):
 
         z = self.forward_encoder(x)
 
-        loss_vq, z_q = self.forward_quantize(z)
+        loss_vq, z_q, _ = self.forward_quantize(z)
 
         xhat = self.forward_decoder(z_q)
 

@@ -224,7 +224,7 @@ class MAE(nn.Module):
         
         loss = self.forward_loss(img, decoded_tokens, mask_ids)
 
-        reconstructed = torch.zeros(decoded_tokens.shape)
+        reconstructed = torch.zeros(decoded_tokens.shape).to(self.device)
         reconstructed[batch_range, unmask_ids] = self.encoder.patch_embed.rearrange(img)[batch_range, unmask_ids]
         reconstructed[batch_range, mask_ids] = decoded_tokens[batch_range, mask_ids]
 

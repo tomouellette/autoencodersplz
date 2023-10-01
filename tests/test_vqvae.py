@@ -30,7 +30,7 @@ class TestVQVAE(unittest.TestCase):
             channels = [4],
             blocks = [1],
             codebook_size = 16,
-            codebook_dim = 4,
+            codebook_dim = 8,
             use_cosine_sim = True,
             kmeans_init = True,
             commitment_weight = 0.5,
