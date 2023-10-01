@@ -277,10 +277,7 @@ class Trainer:
             # training loop
             self.model.train()        
             for batch_idx, batch in enumerate(tqdm(self.train, desc='[Training loop]', disable=silent)):
-                loss, xhat = self.training_step(batch[0].to(self.device))
-                
-            del batch, xhat
-            torch.cuda.empty_cache()
+                loss, xhat = self.training_step(batch[0].to(self.device))            
 
             # validation loop
             self.model.eval()
@@ -289,10 +286,7 @@ class Trainer:
                 loss, xhat = self.validation_step(batch[0].to(self.device))
                 losses[1].append(loss)
                 self.logger.tally(batch_idx, [loss])
-            
-            del batch, xhat
-            torch.cuda.empty_cache()
-            
+
             # update logger
             self.logger.update(epoch)
             
