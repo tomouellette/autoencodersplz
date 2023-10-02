@@ -33,7 +33,7 @@ class TestLightning(unittest.TestCase):
         autoencoder = LinearAE(
             img_size = 28,
             in_chans = 1,
-            hidden_layers = [4, 4],
+            hidden_layers = [1024, 512, 256],
             dropout_rate = 0,
             latent_dim = 16,
             beta = 0.,
@@ -52,7 +52,7 @@ class TestLightning(unittest.TestCase):
         ) 
 
         lr_monitor = pl.callbacks.LearningRateMonitor(logging_interval='step')
-        trainer = pl.Trainer(max_epochs=1, callbacks=[lr_monitor], default_root_dir='tests/')
+        trainer = pl.Trainer(max_epochs=2, callbacks=[lr_monitor], default_root_dir='tests/')
         trainer.fit(model, self.train_loader, self.test_loader)
 
     def test_lightning_training_cosine(self):

@@ -288,7 +288,7 @@ class Trainer:
                 self.logger.tally(batch_idx, [loss])
 
             # update logger
-            self.logger.update(epoch)
+            self.logger.update(epoch, self.optimizer.param_groups[0]['lr'])
             
             # update scheduler
             self.scheduler.step(self.logger.log['loss'][-1])

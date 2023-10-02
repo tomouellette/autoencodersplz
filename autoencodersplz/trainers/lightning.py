@@ -13,18 +13,19 @@ class Lightning(pl.LightningModule):
     """
     def __init__(
         self, 
-        autoencoder: nn.Module,
+        autoencoder: nn.Module,        
         learning_rate: float = 1e-3,
         betas: tuple = (0.9, 0.999),
         weight_decay: float = 0.01,
         scheduler: str = "plateau",
         factor: float = 0.1,
         patience: int = 30,
-        warmup_epochs: int = 40
+        warmup_epochs: int = 40,
+        **autoencoder_kwargs,
     ):
         super().__init__()
         self.save_hyperparameters(ignore=['autoencoder'])        
-        self.autoencoder = autoencoder
+        self.autoencoder = autoencoder(**autoencoder_kwargs)
         self.learning_rate = learning_rate
         self.betas = betas
         self.weight_decay = weight_decay

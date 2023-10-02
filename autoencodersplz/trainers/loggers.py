@@ -23,7 +23,8 @@ class AutoencoderLogger:
     def __init__(self):
         self.log = {
             'epoch': [],
-            'loss': []
+            'loss': [],
+            'learning_rate': [],
         }        
         tqdm_module.tqdm._instances.clear()
         
@@ -40,10 +41,11 @@ class AutoencoderLogger:
         self.n += 1
         self.losses = [self.losses[i] + losses[i] for i in range(len(losses))]
     
-    def update(self, epoch: int):
+    def update(self, epoch: int, learning_rate: float):
         """Update the log with the current epoch's validation results"""
         self.log['epoch'].append(epoch)
         self.log['loss'].append(self.losses[0]/self.n)
+        self.log['learning_rate'].append(learning_rate)
         
     def report(self):        
         self.writer.info(

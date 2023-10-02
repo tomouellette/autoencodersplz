@@ -223,10 +223,16 @@ We've also setup a base class for wrapping `autoencodersplz` modules for trainin
 
 ```python
 import lightning.pytorch as pl
+from autoencodersplz.models import LinearAE
 from autoencodersplz.trainers import Lightning
 
 model = Lightning(
-    autoencoder = autoencoder,
+    autoencoder = LinearAE,
+    img_size = 28,
+    in_chans = 1,
+    hidden_layers = [1024, 512, 256],
+    dropout_rate = 0,
+    latent_dim = 16,
     learning_rate = 1e-3,
     betas = (0.9, 0.999),
     weight_decay = 0.01,
@@ -240,3 +246,5 @@ trainer = pl.Trainer(max_epochs=256, callbacks=[lr_monitor])
 
 trainer.fit(model, train_dataloader, valid_dataloader)
 ```
+
+Notice how both the autoencoder arguments (in this case for `LinearAE`) and training arguments are specified together in the `Lightning` class. This ensures that pytorch lightning can track and save all the hyperparameters when training your models.
