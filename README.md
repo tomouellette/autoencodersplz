@@ -13,6 +13,7 @@ A variety of autoencoder structured models for generative modeling and/or repres
   - [MAE](#mae)  
 - [Training](#training)
   - [Basic](#basic-training)
+  - [Lightning](#lightning-training)
 
 ## <span id='models'> Models </span>
 
@@ -196,7 +197,7 @@ The `Trainer` class enables basic training using a single CPU or GPU for any mod
 from autoencodersplz.trainers import Trainer
 
 trainer = Trainer(
-    model,
+    autoencoder,
     train = train_dataloader,
     valid = valid_dataloader,
     epochs = 128,
@@ -215,3 +216,27 @@ trainer.fit()
 ```
 
 By default, `Trainer` uses an `AdamW` optimizer and either a `CosineDecay` ('cosine') or `ReduceLROnPlateau` ('plateau') scheduler. If you want to use different optimizers or schedulers, just re-assign a new optimizer or scheduler to the `.optimizer` or `.scheduler` attributes (with `trainer.model.parameters()`) prior to calling `trainer.fit()`.
+
+### <span id='lightning-training'> Lightning </span>
+
+We've also setup a base class for wrapping `autoencodersplz` modules for training with [pytorch lightning](https://lightning.ai/docs/pytorch). We provide an example of how to easily interface with pytorch lightning below.
+
+```python
+import lightning.pytorch as pl
+from autoencodersplz.trainers import Lightning
+
+model = Lightning(
+    autoencoder = autoencoder,
+    learning_rate = 1e-3,
+    betas = (0.9, 0.999),
+    weight_decay = 0.01,
+    scheduler = "plateau",
+    factor = 0.1,
+    patience = 30,
+) 
+
+lr_monitor = pl.callbacks.LearningRateMonitor(logging_interval='step')
+trainer = pl.Trainer(max_epochs=256, callbacks=[lr_monitor])
+
+trainer.fit(model, train_dataloader, valid_dataloader)
+```
