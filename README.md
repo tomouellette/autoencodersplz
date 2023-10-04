@@ -260,15 +260,14 @@ from autoencodersplz.trainers import Trainer
 
 train_loader = DataLoader(
     MNIST(root='data/', train=True, download=True, transform=ToTensor()),
-    batch_size=32,
-    shuffle=True,
+    batch_size = 32,
+    shuffle = True,
 )
 
 test_loader = DataLoader(
     MNIST(root='data/', train=False, download=True, transform=ToTensor()),
-    batch_size=32,
-    num_workers=4,
-    shuffle=False,
+    batch_size = 32,
+    shuffle = False,
 )
 
 model = LinearAE(
