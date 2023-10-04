@@ -48,6 +48,10 @@ class MAE(LightningModule):
         The post-normalization layer, by default nn.LayerNorm
     learning_rate : float, optional
         The learning rate if using pytorch lightning for training, by default 1e-3
+    weight_decay : float, optional
+        The weight decay if using pytorch lightning for training, by default 1e-6
+    betas : Tuple[float, float], optional
+        The betas if using pytorch lightning for training, by default (0.9, 0.999)
     warmup_epochs : int, optional
         The number of epochs to warmup the learning rate if using pytorch lightning for training,
         by default 10
@@ -77,9 +81,11 @@ class MAE(LightningModule):
         norm_layer: Optional[Callable] = nn.LayerNorm,
         patch_norm_layer: Optional[Callable] = nn.LayerNorm,
         post_norm_layer: Optional[Callable] = nn.LayerNorm,
-        learning_rate: float = 1e-3,
+        learning_rate: float = 1.5e-4,
+        weight_decay: float = 0.05,
+        betas: Tuple[float, float] = (0.9, 0.95),
         min_lr: float = 1e-6,
-        warmup_epochs: int = 40, 
+        warmup_epochs: int = 40,
     ):
         super(MAE, self).__init__()
         self.arguments = locals()
@@ -127,8 +133,10 @@ class MAE(LightningModule):
 
         # lightning hyperparameters
         self.learning_rate = learning_rate
+        self.weight_decay = weight_decay
+        self.betas = betas
         self.warmup_epochs = warmup_epochs
-        self.min_lr = min_lr
+        self.min_lr = min_lr                
     
     def _patches_to_img(self, decoded_tokens: torch.Tensor) -> torch.Tensor:
         pixels = rearrange(
@@ -248,7 +256,12 @@ class MAE(LightningModule):
     
     def configure_optimizers(self):
         """Optimization configuration for lightning"""
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+        optimizer = torch.optim.AdamW(
+            self.parameters(), 
+            lr = self.learning_rate, 
+            betas = self.betas, 
+            weight_decay = self.weight_decay
+        )
         
         scheduler = CosineDecayWarmUp(
             optimizer,
