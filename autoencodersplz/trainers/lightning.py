@@ -38,14 +38,14 @@ class Lightning(pl.LightningModule):
         """A single training step for the autoencoder"""
         x, *_ = batch
         loss, _ = self.autoencoder(x)
-        self.log("training_loss", loss)
+        self.log("training_loss", loss, batch_size=x.shape[0])
         return loss
     
     def validation_step(self, batch, batch_idx):
         """A single validation step for the autoencoder"""
         x, *_ = batch
         loss, _ = self.autoencoder(x)
-        self.log("validation_loss", loss)
+        self.log("validation_loss", loss, batch_size=x.shape[0])
         return loss
     
     def configure_optimizers(self):

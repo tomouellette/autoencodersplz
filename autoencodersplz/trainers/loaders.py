@@ -1,6 +1,7 @@
 import torch.nn as nn
 import webdataset as wds
 from torchvision import transforms
+from torch.utils.data import DataLoader
 
 class WebDatasetLoader:
     """Specify web dataset streams for training deep learning models
@@ -63,7 +64,7 @@ class WebDatasetLoader:
             self.length = 0
             for _ in wds.WebDataset(self.path): self.length += 1
     
-    def dataloader(self, **kwargs) -> wds.WebLoader:
+    def dataloader(self, **kwargs) -> DataLoader:
         """Returns a dataloader for the entire dataset
 
         Parameters
@@ -88,9 +89,9 @@ class WebDatasetLoader:
             .map_tuple(self.transformations, nn.Identity())
         )
 
-        return wds.WebLoader(dataset.batched(self.batch_size), batch_size=None, **kwargs)
+        return DataLoader(dataset.batched(self.batch_size), batch_size=None, **kwargs)
             
-    def train_dataloader(self, **kwargs) -> wds.WebLoader:
+    def train_dataloader(self, **kwargs) -> DataLoader:
         """Returns a dataloader for the training dataset with len(dataset)-n_test samples
 
         Parameters
@@ -116,9 +117,9 @@ class WebDatasetLoader:
             .map_tuple(self.transformations, nn.Identity())
         )
         
-        return wds.WebLoader(dataset.batched(self.batch_size), batch_size=None, **kwargs)
+        return DataLoader(dataset.batched(self.batch_size), batch_size=None, **kwargs)
     
-    def test_dataloader(self, **kwargs) -> wds.WebLoader:
+    def test_dataloader(self, **kwargs) -> DataLoader:
         """Returns a dataloader for the test dataset with n_test samples
 
         Parameters
@@ -143,4 +144,4 @@ class WebDatasetLoader:
             .map_tuple(transforms.ToTensor())
         )
         
-        return wds.WebLoader(dataset.batched(self.batch_size), batch_size=None, **kwargs)
+        return DataLoader(dataset.batched(self.batch_size), batch_size=None, **kwargs)
