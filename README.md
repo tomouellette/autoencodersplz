@@ -249,6 +249,8 @@ trainer.fit(model, train_dataloader, valid_dataloader)
 
 Here's a basic example of training a fully connected autoencoder on MNIST. The data is downloaded and loaded and then the autoencoder is fit. The training info is logged to the output directory (`training/`) and a GIF of the training routine is generated for visual inspection.
 
+<img width="100%" align='center' src='img/training_process.gif'/>
+
 ```python
 from torch.utils.data import DataLoader
 from torchvision.datasets import MNIST
@@ -288,5 +290,3 @@ trainer = Trainer(
         
 trainer.fit()
 ```
-
-<img width="100%" align='center' src='img/training_process.gif'/>
