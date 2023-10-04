@@ -224,7 +224,6 @@ To make it easier to scale to multi-gpu/distributed training, all `autoencodersp
 ```python
 import lightning.pytorch as pl
 from autoencodersplz.models import LinearAE
-from autoencodersplz.trainers import Lightning
 
 model = LinearAE(
     img_size = 28,
