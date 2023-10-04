@@ -223,14 +223,15 @@ To make it easier to scale to multi-gpu/distributed training, all `autoencodersp
 
 ```python
 import lightning.pytorch as pl
-from autoencodersplz.models import LinearAE
+from autoencodersplz.models import FSQVAE
 
-model = LinearAE(
+model = FSQVAE(
     img_size = 28,
     in_chans = 1,
-    hidden_layers = [1024, 512, 256],
-    dropout_rate = 0,
-    latent_dim = 16,
+    channels = [8, 16],
+    blocks = [1, 1],
+    levels = [8],
+    upsample_mode = 'nearest'
     learning_rate = 1e-3,
     factor = 0.1,
     patience = 30,
