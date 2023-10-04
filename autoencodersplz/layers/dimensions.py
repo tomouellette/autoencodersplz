@@ -12,3 +12,6 @@ def size_conv2dtranspose(input_size, kernel_size=3, stride=1, padding=0):
 
 def size_maxpool2d(input_size, kernel_size=2, stride=2, padding=0):
     return math.floor((input_size + 2 * padding - (kernel_size -1) -1 ) / stride ) + 1
+
+def collect_batch(x):
+    return x[0] if x[0].ndim == 4 else x

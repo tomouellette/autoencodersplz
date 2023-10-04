@@ -14,6 +14,8 @@ A variety of autoencoder structured models for generative modeling and/or repres
 - [Training](#training)
   - [Basic](#basic-training)
   - [Lightning](#lightning-training)
+- [Examples](#examples)
+  - [Basic usage](#examples-basic)
 
 ## <span id='models'> Models </span>
 
@@ -219,32 +221,73 @@ By default, `Trainer` uses an `AdamW` optimizer and either a `CosineDecay` ('cos
 
 ### <span id='lightning-training'> Lightning </span>
 
-We've also setup a base class for wrapping `autoencodersplz` modules for training with [pytorch lightning](https://lightning.ai/docs/pytorch). We provide an example of how to easily interface with pytorch lightning below.
+To make it easier to scale to multi-gpu/distributed training, all `autoencodersplz` models are configured for use with [pytorch lightning](https://lightning.ai/docs/pytorch). Each model is setup with a default optimizer and scheduler and can be directly called by the pytorch lightning trainer. See an example below.
 
 ```python
 import lightning.pytorch as pl
 from autoencodersplz.models import LinearAE
 from autoencodersplz.trainers import Lightning
 
-model = Lightning(
-    autoencoder = LinearAE,
+model = LinearAE(
     img_size = 28,
     in_chans = 1,
     hidden_layers = [1024, 512, 256],
     dropout_rate = 0,
     latent_dim = 16,
     learning_rate = 1e-3,
-    betas = (0.9, 0.999),
-    weight_decay = 0.01,
-    scheduler = "plateau",
     factor = 0.1,
     patience = 30,
+    min_lr = 1e-6
 ) 
 
-lr_monitor = pl.callbacks.LearningRateMonitor(logging_interval='step')
-trainer = pl.Trainer(max_epochs=256, callbacks=[lr_monitor])
+trainer = pl.Trainer(gpus=4, max_epochs=256)
 
 trainer.fit(model, train_dataloader, valid_dataloader)
 ```
 
-Notice how both the autoencoder arguments (in this case for `LinearAE`) and training arguments are specified together in the `Lightning` class. This ensures that pytorch lightning can track and save all the hyperparameters when training your models.
+## <span id='examples'> Examples </span>
+
+### <span id='examples-basic'> Basic usage </span>
+
+Here's a basic example of training a fully connected autoencoder on MNIST. The data is downloaded and loaded and then the autoencoder is fit. The training info is logged to the output directory (`training/`) and a GIF of the training routine is generated for visual inspection.
+
+```python
+from torch.utils.data import DataLoader
+from torchvision.datasets import MNIST
+from torchvision.transforms import ToTensor
+from autoencodersplz.models import LinearAE
+from autoencodersplz.trainers import Trainer
+
+train_loader = DataLoader(
+    MNIST(root='data/', train=True, download=True, transform=ToTensor()),
+    batch_size=32,
+    shuffle=True,
+)
+
+test_loader = DataLoader(
+    MNIST(root='data/', train=False, download=True, transform=ToTensor()),
+    batch_size=32,
+    num_workers=4,
+    shuffle=False,
+)
+
+model = LinearAE(
+    img_size = 28,
+    in_chans = 1,
+    hidden_layers = [256, 128],
+    dropout_rate = 0,
+    latent_dim = 32,
+    beta = 0,
+)
+
+trainer = Trainer(
+    model, 
+    train_loader, 
+    test_loader, 
+    epochs = 32, 
+    learning_rate = 1e-3, 
+    output_dir = 'training/'
+)
+        
+trainer.fit()
+```

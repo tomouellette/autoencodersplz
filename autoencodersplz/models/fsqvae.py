@@ -3,12 +3,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 from typing import Tuple, Union, Optional
 from vector_quantize_pytorch import FSQ
+from lightning import LightningModule
 
-from ..layers.dimensions import to_tuple
 from ..backbones.resnet import ResNet, InvertedResNet
+from ..layers.dimensions import to_tuple, collect_batch
 
-class FSQVAE(nn.Module):
-    """A finite-scalar quantized variational autoencoder with a resnet backbone/encoder
+class FSQVAE(LightningModule):
+    r"""A finite-scalar quantized variational autoencoder with a resnet backbone/encoder
     
     Parameters
     ----------
@@ -28,9 +29,16 @@ class FSQVAE(nn.Module):
         will be bottlenecked/reduced to this dimension prior to quantization, by default None
     upsample_mode : str, optional
         The mode of upsampling, by default 'nearest'
-    vq_kwargs : dict, optional
-        Additional keyword arguments for the vector quantization layer; see the
-        vector-quantize-pytorch package for more details on available parameters
+    learning_rate : float, optional
+        The learning rate if using pytorch lightning for training, by default 1e-3
+    factor : float, optional
+        The factor to reduce the learning rate by if using pytorch lightning for training,
+        by default 0.2
+    patience : int, optional
+        The number of epochs to wait before reducing the learning rate if using pytorch lightning
+        for training, by default 20
+    min_lr : float, optional
+        The minimum learning rate if using pytorch lightning for training, by default 1e-6
     
     Raises
     ------
@@ -60,12 +68,14 @@ class FSQVAE(nn.Module):
         levels: list = [8, 6, 5],
         latent_dim: Optional[int] = None,
         upsample_mode: str = 'nearest',
+        learning_rate: float = 1e-3,
+        factor: float = 0.2,
+        patience: int = 20,
+        min_lr: float = 1e-6,        
     ):
         super(FSQVAE, self).__init__()
         self.arguments = locals()
         img_size = to_tuple(img_size)
-        
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         self.in_chans = in_chans
         self.fsq_channels = len(levels)
@@ -103,6 +113,12 @@ class FSQVAE(nn.Module):
             blocks = blocks[::-1],
             upsample_mode = upsample_mode
         )
+
+        # lightning hyperparameters
+        self.learning_rate = learning_rate
+        self.factor = factor
+        self.patience = patience
+        self.min_lr = min_lr
     
     def forward_encoder(self, x: torch.Tensor) -> torch.Tensor:
         """Encode the input data into a latent space (x -> z)"""        
@@ -130,8 +146,7 @@ class FSQVAE(nn.Module):
         return loss
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        self.device = x.device
-
+        """Input images to loss and reconstruction"""
         z = self.forward_encoder(x)
 
         z_q, _ = self.forward_quantize(z)
@@ -141,3 +156,30 @@ class FSQVAE(nn.Module):
         loss = self.forward_loss(x, xhat)
         
         return loss, xhat
+    
+    def configure_optimizers(self):
+        """Optimization configuration for lightning"""
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+        
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer, 
+            mode = "min", 
+            factor = self.factor, 
+            patience = self.patience, 
+            min_lr = self.min_lr
+        )
+
+        return {"optimizer": optimizer, "lr_scheduler": scheduler, "monitor": "val_loss"}
+
+    def training_step(self, batch, batch_idx):
+        """Training step for lightning"""        
+        batch = collect_batch(batch)
+        loss, _ = self.forward(batch)
+        self.log("train_loss", loss, on_epoch=True, on_step=False)
+        return loss
+
+    def validation_step(self, batch, batch_idx):
+        """Validation step for lightning"""
+        batch = collect_batch(batch)
+        loss, _ = self.forward(batch)
+        self.log("val_loss", loss, on_epoch=True, on_step=False)

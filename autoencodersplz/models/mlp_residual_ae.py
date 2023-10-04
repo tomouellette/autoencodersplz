@@ -2,12 +2,13 @@ import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from lightning import LightningModule
 from typing import Tuple, Optional, Union
 
 from ..backbones.mlp import LinearResidualNet
-from ..layers.dimensions import to_tuple
+from ..layers.dimensions import to_tuple, collect_batch
 
-class LinearResidualAE(nn.Module):
+class LinearResidualAE(LightningModule):
     """A fully connected autoencoder with a linear residual network backbone and decoder
     
     Parameters
@@ -35,6 +36,16 @@ class LinearResidualAE(nn.Module):
     max_temperature : int, optional
         The number of iterations/batches until the KL divergence term reaches its maximum value,
         by default 1000
+    learning_rate : float, optional
+        The learning rate if using pytorch lightning for training, by default 1e-3
+    factor : float, optional
+        The factor to reduce the learning rate by if using pytorch lightning for training,
+        by default 0.2
+    patience : int, optional
+        The number of epochs to wait before reducing the learning rate if using pytorch lightning
+        for training, by default 20
+    min_lr : float, optional
+        The minimum learning rate if using pytorch lightning for training, by default 1e-6
     
     References
     ----------
@@ -57,6 +68,10 @@ class LinearResidualAE(nn.Module):
         beta: float = 0.1,
         kld_weight: Optional[float] = None,
         max_temperature: int = 1000,
+        learning_rate: float = 1e-3,
+        factor: float = 0.2,
+        patience: int = 20,
+        min_lr: float = 1e-6        
     ):
         super(LinearResidualAE, self).__init__()
         self.arguments = locals()
@@ -64,8 +79,6 @@ class LinearResidualAE(nn.Module):
         self.iter = 0
         self.in_chans = in_chans        
         self.max_temperature = max_temperature
-        
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
         if not isinstance(kld_weight, float):
             self.kld_weight = beta * latent_dim / math.prod(self.img_size)
@@ -98,6 +111,12 @@ class LinearResidualAE(nn.Module):
             with_batch_norm = with_batch_norm,
             zero_initialization = zero_initialization
         )
+
+        # lightning hyperparameters
+        self.learning_rate = learning_rate
+        self.factor = factor
+        self.patience = patience
+        self.min_lr = min_lr
     
     def forward_encoder(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -136,7 +155,7 @@ class LinearResidualAE(nn.Module):
         # KLD loss E[log(p(x|z))] - KLD(q(z|x) || p(z))
         if self.arguments['beta'] > 0:
             loss_kld = -0.5 * torch.sum(1 + var - mu.pow(2) - var.exp(), dim=-1)
-            temperature = torch.clamp(torch.Tensor([self.iter/self.max_temperature]), 0, 1).to(self.device)
+            temperature = torch.clamp(torch.Tensor([self.iter/self.max_temperature], device=x.device), 0, 1)
         else:
             loss_kld = 0
             temperature = 0
@@ -147,8 +166,7 @@ class LinearResidualAE(nn.Module):
         return loss
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        self.device = x.device
-
+        """Input images to loss and reconstruction"""
         mu, var = self.forward_encoder(x)
         
         if self.arguments['beta'] > 0:
@@ -161,3 +179,30 @@ class LinearResidualAE(nn.Module):
         loss = self.forward_loss(x, xhat, mu, var)
         
         return loss, xhat
+    
+    def configure_optimizers(self):
+        """Optimization configuration for lightning"""
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+        
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer, 
+            mode = "min", 
+            factor = self.factor, 
+            patience = self.patience, 
+            min_lr = self.min_lr
+        )
+
+        return {"optimizer": optimizer, "lr_scheduler": scheduler, "monitor": "val_loss"}
+
+    def training_step(self, batch, batch_idx):
+        """Training step for lightning"""        
+        batch = collect_batch(batch)
+        loss, _ = self.forward(batch)
+        self.log("train_loss", loss, on_epoch=True, on_step=False)
+        return loss
+
+    def validation_step(self, batch, batch_idx):
+        """Validation step for lightning"""
+        batch = collect_batch(batch)
+        loss, _ = self.forward(batch)
+        self.log("val_loss", loss, on_epoch=True, on_step=False)

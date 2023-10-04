@@ -2,12 +2,13 @@ import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from lightning import LightningModule
 from typing import Tuple, Optional, Union
 
-from ..layers.dimensions import to_tuple
 from ..backbones.resnet import ResNet, InvertedResNet
+from ..layers.dimensions import to_tuple, collect_batch
 
-class ConvResidualAE(nn.Module):
+class ConvResidualAE(LightningModule):
     """A determinstic or variational autoencoder with a resnet backbone/encoder
 
     Parameters
@@ -31,6 +32,16 @@ class ConvResidualAE(nn.Module):
         by default 1000
     upsample_mode : str, optional
         The mode of upsampling, by default 'nearest'
+    learning_rate : float, optional
+        The learning rate if using pytorch lightning for training, by default 1e-3
+    factor : float, optional
+        The factor to reduce the learning rate by if using pytorch lightning for training,
+        by default 0.2
+    patience : int, optional
+        The number of epochs to wait before reducing the learning rate if using pytorch lightning
+        for training, by default 20
+    min_lr : float, optional
+        The minimum learning rate if using pytorch lightning for training, by default 1e-6
     
     References
     ----------
@@ -51,12 +62,14 @@ class ConvResidualAE(nn.Module):
         kld_weight: Optional[float] = None,
         max_temperature: int = 1000,
         upsample_mode: str = 'nearest',
+        learning_rate: float = 1e-3,
+        factor: float = 0.2,
+        patience: int = 20,
+        min_lr: float = 1e-6,
     ):
         super(ConvResidualAE, self).__init__()        
         self.arguments = locals()
         img_size = to_tuple(img_size)
-        
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
         self.iter = 0
         self.in_chans = in_chans        
@@ -82,7 +95,13 @@ class ConvResidualAE(nn.Module):
             channels = channels[::-1],
             blocks = blocks[::-1],
             upsample_mode = upsample_mode
-        )        
+        )
+
+        # lightning hyperparameters
+        self.learning_rate = learning_rate
+        self.factor = factor
+        self.patience = patience
+        self.min_lr = min_lr
     
     def forward_encoder(self, x: torch.Tensor) -> torch.Tensor:
         """Encode the input data into a latent space (x -> z)"""        
@@ -117,7 +136,7 @@ class ConvResidualAE(nn.Module):
         # KLD loss E[log(p(x|z))] - KLD(q(z|x) || p(z))
         if self.arguments['beta'] > 0:
             loss_kld = -0.5 * torch.sum(1 + var - mu.pow(2) - var.exp(), dim=-1)
-            temperature = torch.clamp(torch.Tensor([self.iter/self.max_temperature]), 0, 1).to(self.device)
+            temperature = torch.clamp(torch.Tensor([self.iter/self.max_temperature], device=x.device), 0, 1)
         else:
             loss_kld = 0
             temperature = 0
@@ -128,8 +147,7 @@ class ConvResidualAE(nn.Module):
         return loss
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        self.device = x.device
-
+        """Input images to loss and reconstruction"""
         mu, var = self.forward_encoder(x)
         
         if self.arguments['beta'] > 0:
@@ -142,3 +160,30 @@ class ConvResidualAE(nn.Module):
         loss = self.forward_loss(x, xhat, mu, var)
         
         return loss, xhat
+    
+    def configure_optimizers(self):
+        """Optimization configuration for lightning"""
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+        
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer, 
+            mode = "min", 
+            factor = self.factor, 
+            patience = self.patience, 
+            min_lr = self.min_lr
+        )
+
+        return {"optimizer": optimizer, "lr_scheduler": scheduler, "monitor": "val_loss"}
+
+    def training_step(self, batch, batch_idx):
+        """Training step for lightning"""        
+        batch = collect_batch(batch)
+        loss, _ = self.forward(batch)
+        self.log("train_loss", loss, on_epoch=True, on_step=False)
+        return loss
+
+    def validation_step(self, batch, batch_idx):
+        """Validation step for lightning"""
+        batch = collect_batch(batch)
+        loss, _ = self.forward(batch)
+        self.log("val_loss", loss, on_epoch=True, on_step=False)

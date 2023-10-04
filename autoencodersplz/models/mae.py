@@ -3,13 +3,15 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from einops import repeat, rearrange
+from lightning import LightningModule
 from typing import Union, Tuple, Optional, Callable
 from timm.models.vision_transformer import Block, Mlp
 
-from ..layers.dimensions import to_tuple
+from ..layers.dimensions import to_tuple, collect_batch
 from ..backbones.vision_transformer import vision_transformer
+from ..trainers.schedulers import CosineDecayWarmUp
 
-class MAE(nn.Module):
+class MAE(LightningModule):
     """A masked autoencoder with a vision transformer backbone/encoder and decoder
 
     Parameters
@@ -44,6 +46,13 @@ class MAE(nn.Module):
         The patch normalization layer, by default nn.LayerNorm
     post_norm_layer : Optional[Callable], optional
         The post-normalization layer, by default nn.LayerNorm
+    learning_rate : float, optional
+        The learning rate if using pytorch lightning for training, by default 1e-3
+    warmup_epochs : int, optional
+        The number of epochs to warmup the learning rate if using pytorch lightning for training,
+        by default 10
+    min_lr : float, optional
+        The minimum learning rate if using pytorch lightning for training, by default 1e-6
     
     References
     ----------
@@ -68,11 +77,12 @@ class MAE(nn.Module):
         norm_layer: Optional[Callable] = nn.LayerNorm,
         patch_norm_layer: Optional[Callable] = nn.LayerNorm,
         post_norm_layer: Optional[Callable] = nn.LayerNorm,
+        learning_rate: float = 1e-3,
+        min_lr: float = 1e-6,
+        warmup_epochs: int = 40, 
     ):
         super(MAE, self).__init__()
         self.arguments = locals()
-
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
         self.mask_ratio = mask_ratio
         self.decoder_embed_dim = decoder_embed_dim
@@ -96,13 +106,13 @@ class MAE(nn.Module):
             act_layer = nn.GELU,
             block_fn = Block,
             mlp_layer = Mlp,
-            num_classes = 1,
+            num_classes = 100,
         )
 
         num_patches = self.encoder.patch_embed.num_patches
         self.patch_height, self.patch_width  = to_tuple(patch_size)
 
-        # Decoder x'|z
+        # decoder x'|z
         self.decoder_embed = nn.Linear(embed_dim, decoder_embed_dim, bias=True)
         self.mask_token = nn.Parameter(torch.randn(decoder_embed_dim))        
         
@@ -114,7 +124,11 @@ class MAE(nn.Module):
         self.decoder_pos_embed = nn.Embedding(num_patches, decoder_embed_dim)
         self.decoder_norm = nn.LayerNorm(decoder_embed_dim)        
         self.decoder_pred = nn.Linear(decoder_embed_dim, math.prod([self.patch_height, self.patch_width]) * in_chans, bias=True)
-    
+
+        # lightning hyperparameters
+        self.learning_rate = learning_rate
+        self.warmup_epochs = warmup_epochs
+        self.min_lr = min_lr
     
     def _patches_to_img(self, decoded_tokens: torch.Tensor) -> torch.Tensor:
         pixels = rearrange(
@@ -128,11 +142,12 @@ class MAE(nn.Module):
         return pixels
     
     def random_masking(self, tokens: torch.Tensor, mask_ratio: float):
+        device = tokens.device
         batch_size, num_patches, *_ = tokens.shape
 
         # collect masked and unmasked indices
         num_masked = int((1-mask_ratio) * num_patches)
-        rand_ids = torch.rand(batch_size, num_patches, device=self.device).argsort(dim=-1)
+        rand_ids = torch.rand(batch_size, num_patches, device=device).argsort(dim=-1)
         mask_ids, unmask_ids = rand_ids[:, :num_masked], rand_ids[:, num_masked:]
 
         # mask tokens
@@ -163,6 +178,7 @@ class MAE(nn.Module):
         mask_ids: torch.Tensor, 
         unmask_ids: torch.Tensor,
     ) -> torch.Tensor:
+        device = tokens.device
         (batch_size, *_), num_masked, num_unmasked = tokens.shape, mask_ids.shape[1], unmask_ids.shape[1]
 
         #  embed tokens
@@ -180,7 +196,7 @@ class MAE(nn.Module):
             batch_size, 
             num_masked + num_unmasked, 
             self.decoder_embed_dim, 
-            device = self.device
+            device = device
         )
 
         # combine masked tokens and unmasked decoder tokens
@@ -213,7 +229,7 @@ class MAE(nn.Module):
         return loss
     
     def forward(self, img: torch.Tensor) -> torch.Tensor:
-        self.device, self.img_size = img.device, img.shape[2:]
+        device, self.img_size = img.device, img.shape[2:]
         
         batch_size = img.shape[0]
         batch_range = torch.arange(batch_size)[:, None]
@@ -224,8 +240,34 @@ class MAE(nn.Module):
         
         loss = self.forward_loss(img, decoded_tokens, mask_ids)
 
-        reconstructed = torch.zeros(decoded_tokens.shape).to(self.device)
+        reconstructed = torch.zeros(decoded_tokens.shape, device=device)
         reconstructed[batch_range, unmask_ids] = self.encoder.patch_embed.rearrange(img)[batch_range, unmask_ids]
         reconstructed[batch_range, mask_ids] = decoded_tokens[batch_range, mask_ids]
 
         return loss, self._patches_to_img(decoded_tokens)
+    
+    def configure_optimizers(self):
+        """Optimization configuration for lightning"""
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+        
+        scheduler = CosineDecayWarmUp(
+            optimizer,
+            epochs = self.trainer.max_epochs, 
+            warmup_epochs = self.warmup_epochs,
+            min_lr = self.min_lr
+        )
+
+        return {"optimizer": optimizer, "lr_scheduler": scheduler}
+
+    def training_step(self, batch, batch_idx):
+        """Training step for lightning"""        
+        batch = collect_batch(batch)
+        loss, _ = self.forward(batch)
+        self.log("train_loss", loss, on_epoch=True, on_step=False)
+        return loss
+
+    def validation_step(self, batch, batch_idx):
+        """Validation step for lightning"""
+        batch = collect_batch(batch)
+        loss, _ = self.forward(batch)
+        self.log("val_loss", loss, on_epoch=True, on_step=False)
