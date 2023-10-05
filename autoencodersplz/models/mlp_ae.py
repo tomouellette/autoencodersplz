@@ -57,7 +57,7 @@ class LinearAE(LightningModule):
         in_chans: int = 3,
         hidden_layers: list = [64, 64], 
         dropout_rate: float = 0, 
-        activation = nn.ReLU,
+        activation = None,
         latent_dim: int = 16,
         beta: float = 0.1,
         kld_weight: Optional[float] = None,
@@ -79,6 +79,9 @@ class LinearAE(LightningModule):
             self.kld_weight = beta * latent_dim / math.prod(self.img_size)
         else:
             self.kld_weight = beta * kld_weight
+        
+        if activation is None:
+            activation = nn.LeakyReLU
         
         # representations z|x
         self.encoder = MLP(
@@ -184,11 +187,11 @@ class LinearAE(LightningModule):
         """Training step for lightning"""        
         batch = collect_batch(batch)
         loss, _ = self.forward(batch)
-        self.log("train_loss", loss, on_epoch=True, on_step=False)
+        self.log("train_loss", loss, on_epoch=False, on_step=True, batch_size=batch.size(0))
         return loss
 
     def validation_step(self, batch, batch_idx):
         """Validation step for lightning"""
         batch = collect_batch(batch)
         loss, _ = self.forward(batch)
-        self.log("val_loss", loss, on_epoch=True, on_step=False)
+        self.log("val_loss", loss, on_epoch=False, on_step=True, batch_size=batch.size(0))

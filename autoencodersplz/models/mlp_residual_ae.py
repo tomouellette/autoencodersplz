@@ -198,11 +198,11 @@ class LinearResidualAE(LightningModule):
         """Training step for lightning"""        
         batch = collect_batch(batch)
         loss, _ = self.forward(batch)
-        self.log("train_loss", loss, on_epoch=True, on_step=False)
+        self.log("train_loss", loss, on_epoch=False, on_step=True, batch_size=batch.size(0))
         return loss
 
     def validation_step(self, batch, batch_idx):
         """Validation step for lightning"""
         batch = collect_batch(batch)
         loss, _ = self.forward(batch)
-        self.log("val_loss", loss, on_epoch=True, on_step=False)
+        self.log("val_loss", loss, on_epoch=False, on_step=True, batch_size=batch.size(0))
