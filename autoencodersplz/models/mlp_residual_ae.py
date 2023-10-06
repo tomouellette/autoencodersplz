@@ -155,7 +155,7 @@ class LinearResidualAE(LightningModule):
         # KLD loss E[log(p(x|z))] - KLD(q(z|x) || p(z))
         if self.arguments['beta'] > 0:
             loss_kld = -0.5 * torch.sum(1 + var - mu.pow(2) - var.exp(), dim=-1)
-            temperature = torch.clamp(torch.Tensor([self.iter/self.max_temperature], device=x.device), 0, 1)
+            temperature = torch.clamp(torch.Tensor([self.iter/self.max_temperature]), 0, 1).to(x.device)
         else:
             loss_kld = 0
             temperature = 0
