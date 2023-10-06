@@ -133,7 +133,6 @@ class FSQVAE(LightningModule):
         z_q = self.from_levels(z_q)
         z_q = self.project_out(z_q)
         return z_q, indices
-
     
     def forward_decoder(self, z_q: torch.Tensor) -> torch.Tensor:
         """Decode the latent representation into the original space (z -> x)"""        
