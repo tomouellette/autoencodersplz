@@ -11,6 +11,7 @@ A variety of autoencoder structured models for generative modeling and/or repres
   - [VQVAE](#vqvae)
   - [FSQVAE](#fsqvae)
   - [MAE](#mae)  
+  - [MAEMix](#maemix)
 - [Training](#training)
   - [Basic](#basic-training)
   - [Lightning](#lightning-training)
@@ -176,10 +177,36 @@ model = MAE(
     decoder_embed_dim = 768,
     decoder_depth = 12,
     decoder_num_heads = 12,
-    norm_layer = nn.LayerNorm,
-    patch_norm_layer = nn.LayerNorm,
-    post_norm_layer = nn.LayerNorm,
-    device = None,
+    norm_layer = torch.nn.LayerNorm,
+    patch_norm_layer = torch.nn.LayerNorm,
+    post_norm_layer = torch.nn.LayerNorm,
+)
+
+img = torch.rand(1, 3, 224, 224)
+
+loss, reconstructed_img = model(img)
+```
+
+### <span id='maemix'> MAEMix </span>
+
+A masked autoencoder with a MLP-mixer encoder and decoder
+
+[MLP-Mixer: An all-MLP Architecture for Vision](https://arxiv.org/abs/2105.01601)
+
+```python
+import torch
+from autoencodersplz.models import MAEMix
+
+model = MAEMix(
+    img_size = 224,
+    patch_size = 16,
+    in_chans = 3,
+    mask_ratio = 0.5,
+    embed_dim = 768,
+    depth = 12,
+    mlp_ratio = 4,
+    decoder_embed_dim = 768,
+    decoder_depth = 12,
 )
 
 img = torch.rand(1, 3, 224, 224)
