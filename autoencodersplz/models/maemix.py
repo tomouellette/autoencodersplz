@@ -108,6 +108,7 @@ class MAEMix(LightningModule):
         )
 
         self.decoder_blocks = self.decoder.forward_mix
+        self.decoder_pos_embed = nn.Embedding(num_patches, decoder_embed_dim)
         self.decoder_norm = nn.LayerNorm(decoder_embed_dim)        
         self.decoder_pred = nn.Linear(decoder_embed_dim, math.prod([self.patch_height, self.patch_width]) * in_chans, bias=True)
 
@@ -172,10 +173,11 @@ class MAEMix(LightningModule):
         tokens = self.decoder_embed(tokens)
         
         # store unmasked tokens
-        unmasked_tokens = tokens
+        unmasked_tokens = tokens + self.decoder_pos_embed(unmask_ids)
 
         # expand mask tokens to batch
         mask_tokens = repeat(self.mask_token, 'd -> b n d', b = batch_size, n = num_masked)
+        mask_tokens = mask_tokens + self.decoder_pos_embed(mask_ids)
 
         # construct new tensor to store masked and unmasked tokens
         decoder_tokens = torch.zeros(

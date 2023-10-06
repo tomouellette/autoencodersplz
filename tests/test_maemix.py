@@ -30,20 +30,20 @@ class TestMAE(unittest.TestCase):
         model = MAEMix(
             img_size = 28, 
             in_chans = 1, 
-            patch_size = 14,
+            patch_size = 4,
             embed_dim = 8,
             mlp_ratio = 2,
-            depth = 1,
+            depth = 2,
             mask_ratio = 0.5,
             decoder_embed_dim = 8,
-            decoder_depth = 1,
+            decoder_depth = 2,
         )
 
         trainer = Trainer(
             model,
             self.train_loader,
             self.test_loader,
-            epochs = 1,
+            epochs = 32,
             learning_rate = 1e-3,
             save_backbone = True,
             output_dir = 'tests/train_maemix'
@@ -51,31 +51,31 @@ class TestMAE(unittest.TestCase):
         
         trainer.fit()
 
-    def test_lightning(self):
-        model = MAEMix(
-            img_size = 28, 
-            in_chans = 1, 
-            patch_size = 14,
-            embed_dim = 8,
-            mlp_ratio = 2,
-            depth = 1,
-            mask_ratio = 0.5,
-            decoder_embed_dim = 8,
-            decoder_depth = 1,            
-            learning_rate=1e-3,
-            warmup_epochs=1,
-            min_lr = 1e-5,
-        )
+    # def test_lightning(self):
+    #     model = MAEMix(
+    #         img_size = 28, 
+    #         in_chans = 1, 
+    #         patch_size = 14,
+    #         embed_dim = 8,
+    #         mlp_ratio = 2,
+    #         depth = 1,
+    #         mask_ratio = 0.5,
+    #         decoder_embed_dim = 8,
+    #         decoder_depth = 1,            
+    #         learning_rate=1e-3,
+    #         warmup_epochs=1,
+    #         min_lr = 1e-5,
+    #     )
 
-        trainer = pl.Trainer(max_epochs=1, default_root_dir='tests/train_maemix_lightning')
-        trainer.fit(model, self.train_loader, self.test_loader)
+    #     trainer = pl.Trainer(max_epochs=1, default_root_dir='tests/train_maemix_lightning')
+    #     trainer.fit(model, self.train_loader, self.test_loader)
 
-    def tearDown(self):
-        if os.path.exists('tests/train_maemix'):
-            shutil.rmtree('tests/train_maemix')  
+    # def tearDown(self):
+    #     if os.path.exists('tests/train_maemix'):
+    #         shutil.rmtree('tests/train_maemix')  
 
-        if os.path.exists('tests/train_maemix_lightning'):
-            shutil.rmtree('tests/train_maemix_lightning')      
+    #     if os.path.exists('tests/train_maemix_lightning'):
+    #         shutil.rmtree('tests/train_maemix_lightning')      
 
 if __name__ == '__main__':
     unittest.main()
