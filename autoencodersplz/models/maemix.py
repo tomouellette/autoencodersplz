@@ -232,7 +232,7 @@ class MAEMix(LightningModule):
         reconstructed[batch_range, unmask_ids] = self.encoder.rearrange(img)[batch_range, unmask_ids]
         reconstructed[batch_range, mask_ids] = decoded_tokens[batch_range, mask_ids]
 
-        return loss, self._patches_to_img(decoded_tokens)
+        return loss, self._patches_to_img(reconstructed)
     
     def configure_optimizers(self):
         """Optimization configuration for lightning"""
