@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 from functools import partial
 from typing import Optional, Callable, Union, Tuple
@@ -114,3 +115,117 @@ def vision_transformer(
     vit.arguments = arguments
 
     return vit
+
+
+class VisionTransformerPredictor(nn.Module):
+    """
+    Lightweight ViT Predictor Module that predicts target blocks from context patches.
+    """
+    def __init__(self, 
+                 num_patches,
+                 embed_dim: int = 768, 
+                 embed_dim_predictor: int = 384,
+                 depth: int = 6,
+                 num_heads: int = 12,
+                 mlp_ratio: float = 4.,
+                 qkv_bias: bool = True,
+                 drop_rate: float = 0.,
+                 attn_drop_rate: float = 0.,
+                 drop_path_rate: float = 0.,
+                 norm_layer = nn.LayerNorm,
+                 init_std = 0.02,
+                 **kwargs
+                 ):
+        super().__init__()
+        
+        self.predictor_embed = nn.Linear(embed_dim, embed_dim_predictor, bias=True)
+        self.mask_token = nn.Parameter(torch.zeros(1, 1, embed_dim_predictor))
+        depth_decay_rule = [x.item() for x in torch.linspace(0, drop_path_rate, depth)]
+        
+        self.pos_embed_predictor = nn.Parameter(torch.randn(1, num_patches, embed_dim_predictor) * .02)
+        self.predictor_blocks = nn.ModuleList([
+            Block(dim = embed_dim_predictor,
+                  num_heads = num_heads,
+                  mlp_ratio = mlp_ratio,
+                  qkv_bias = qkv_bias,
+                  proj_drop = drop_rate,
+                  attn_drop = attn_drop_rate,
+                  drop_path = depth_decay_rule[i],
+                  norm_layer = norm_layer
+                  )
+            for i in range(depth)
+        ])
+        self.predictor_norm = norm_layer(embed_dim_predictor)
+        self.predictor_proj = nn.Linear(embed_dim_predictor, embed_dim, bias=True)
+        
+        nn.init.trunc_normal_(self.mask_token, std=init_std)
+        
+    def _apply_mask(self, x, mask):
+        """
+        Selects patches from x according to mask.
+
+        Args:
+            x (torch.Tensor): Tensor of shape (batch_size, block_size, embed_dim)
+            masks (torch.Tensor): Tensors containing indices of patches in block_size to keep, (sqrt(block_size), sqrt(block_size))
+
+        Returns:
+            torch.Tensor: Input tensor with mask tokens added, of shape (batch_size, len(index), embed_dim)
+        """
+        # Flatten mask to 1D
+        flat_mask = mask.view(-1)
+        # Get indices of mask tokens
+        index = flat_mask.nonzero().squeeze()
+        # Gather the selected patches using the index tensor
+        selected_x = torch.index_select(x, dim=1, index=index)
+        
+        return selected_x
+    
+        
+    def forward(self, context_encoding, mask, target_idx):
+        """
+        Forward function of the ViT Predictor Module.
+
+        Args:
+            context_encoding (torch.Tensor): Tensor of shape (batch_size, context_block_size, embed_dim)
+            mask (torch.Tensor): Tensor of shape (num_targets + 1, img_size//patch_size, img_size//patch_size);
+                mask[0] is the mask for the context block, mask[1:] are the masks for the target blocks
+                0 indicates background, 1 indicates content
+            target_idx (int): Index of the target block to predict
+
+        Returns:
+            torch.Tensor: Tensor of shape (batch_size, 1, embed_dim) containing the predicted target block
+        """
+        
+        # Get number of batches
+        num_batches = context_encoding.shape[0]
+        context_block_size = context_encoding.shape[1]
+        
+        # Map from encoder-dim to pedictor-dim
+        context_encoding = self.predictor_embed(context_encoding)
+        
+        # Add positional embedding to context tokens
+        context_pos_embed = self.pos_embed_predictor.repeat(num_batches, 1, 1)
+        context_encoding += self._apply_mask(context_pos_embed, mask[0])
+        
+        # Concatenate mask tokens to context tokens
+        target_pos_embed = self.pos_embed_predictor.repeat(num_batches, 1, 1)
+        target_pos_embed = self._apply_mask(target_pos_embed, mask[target_idx+1])
+        
+        pred_tokens = self.mask_token.repeat(target_pos_embed.size(0), target_pos_embed.size(1), 1)
+        pred_tokens += target_pos_embed
+        
+        prediction_encoding = context_encoding
+        prediction_encoding = torch.cat([prediction_encoding, pred_tokens], dim = 1)
+        
+        # Forward propagation
+        for blk in self.predictor_blocks:
+            prediction_encoding = blk(prediction_encoding)
+        prediction_encoding = self.predictor_norm(prediction_encoding)
+        
+        # Return predictions for mask tokens (last len(target_masks) tokens)
+        predictions = prediction_encoding[:, context_block_size:, :]
+        
+        # Map from predictor-dim to encoder-dim
+        predictions = self.predictor_proj(predictions)
+        
+        return predictions
