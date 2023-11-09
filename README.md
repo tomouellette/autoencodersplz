@@ -17,6 +17,7 @@ A variety of autoencoder structured models for generative modeling and/or repres
   - [FSQVAE](#fsqvae)
   - [MAE](#mae)  
   - [MAEMix](#maemix)
+  - [IJEPA](#ijepa)
 - [Training](#training)
   - [Basic](#basic-training)
   - [Lightning](#lightning-training)
@@ -213,6 +214,34 @@ model = MAEMix(
     mlp_ratio = 4,
     decoder_embed_dim = 768,
     decoder_depth = 12,
+)
+
+img = torch.rand(1, 3, 224, 224)
+
+loss, reconstructed_img = model(img)
+```
+
+### <span id='ijepa'> IJEPA </span>
+
+```python
+import torch
+from autoencodersplz.models import IJEPA
+
+model = IJEPA(
+    img_size = 224,
+    patch_size = 16,
+    in_chans = 3,
+    embed_dim = 768,
+    depth = 12,
+    num_heads = 12,
+    mlp_ratio = 4,
+    embed_dim_predictor = 384,
+    predictor_depth = 12,
+    num_targets = 4,
+    target_aspect_ratio = 0.75,
+    target_scale = 0.2,
+    context_aspect_ratio = 1.,
+    context_scale = 0.9
 )
 
 img = torch.rand(1, 3, 224, 224)
