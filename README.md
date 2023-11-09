@@ -5,7 +5,7 @@
 
 ---
 
-A variety of autoencoder structured models for generative modeling and/or representation learning in pytorch.
+A variety of autoencoder structured models for generative modeling and/or representation learning in pytorch. Go ahead and train some models and reconstruct some things.
 
 ## Table of contents
 
