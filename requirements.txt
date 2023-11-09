@@ -10,3 +10,4 @@ torch
 torchvision
 tqdm
 vector-quantize-pytorch
+lightning

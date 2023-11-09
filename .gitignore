@@ -10,6 +10,7 @@ docs/
 **/.DS_Store
 temp/
 lightning_logs/
+conda.sh
 
 # C extensions
 *.so
