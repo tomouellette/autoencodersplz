@@ -223,6 +223,10 @@ loss, reconstructed_img = model(img)
 
 ### <span id='ijepa'> IJEPA </span>
 
+Image-based joint-embedding predictive architecture (Thanks to <a href='https://github.com/SyouTono242'>Yiran</a> for porting this implementation)
+
+<a href="https://arxiv.org/abs/2301.08243">Self-Supervised Learning from Images with a Joint-Embedding Predictive Architecture</a>
+
 ```python
 import torch
 from autoencodersplz.models import IJEPA
