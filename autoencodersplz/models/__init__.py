@@ -5,6 +5,7 @@ from .mlp_ae import LinearAE
 from .mlp_residual_ae import LinearResidualAE
 from .residual_ae import ConvResidualAE
 from .vqvae import VQVAE
+from .i_jepa import IJEPA
 
 __all__ = [    
     'FSQVAE',    
@@ -13,5 +14,6 @@ __all__ = [
     'LinearAE',
     'ConvResidualAE',
     'LinearResidualAE',
-    'VQVAE'
+    'VQVAE',
+    'IJEPA'
 ]

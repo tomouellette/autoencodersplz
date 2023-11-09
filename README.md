@@ -167,6 +167,7 @@ A masked autoencoder with a vision transformer encoder and decoder
 
 ```python
 import torch
+import torch.nn as nn
 from autoencodersplz.models import MAE
 
 model = MAE(
