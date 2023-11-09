@@ -2,14 +2,12 @@ import copy
 import torch
 import numpy as np
 import torch.nn as nn
-import torch.nn.functional as F
 from einops import rearrange
+import torch.nn.functional as F
+from timm.models.vision_transformer import Block, Mlp
 from typing import Union, Tuple, Optional, Callable, List
 
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
 from ..layers.dimensions import to_tuple
-from timm.models.vision_transformer import Block, Mlp
 from ..backbones.vision_transformer import vision_transformer, VisionTransformerPredictor
 
 class IJEPA(nn.Module):
