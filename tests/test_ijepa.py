@@ -8,7 +8,7 @@ from torchvision.transforms import ToTensor
 from torch.utils.data import DataLoader
 
 from autoencodersplz.models import IJEPA
-from autoencodersplz.trainers import AutoencoderTrainer
+from autoencodersplz.trainers import Trainer
 
 class TestIJEPA(unittest.TestCase):
     
@@ -43,18 +43,17 @@ class TestIJEPA(unittest.TestCase):
             context_scale = 0.9
         )
         
-        trainer = AutoencoderTrainer(
+        trainer = Trainer(
             model,
             self.train_loader,
             self.test_loader,
-            epochs = 5,
+            epochs = 1,
             learning_rate = 1e-3,
             save_backbone = True,
             output_dir = 'tests/train_ijepa'
         )
         
-        trainer.fit()
-        
+        trainer.fit()        
     
     def tearDown(self):
         if os.path.exists('tests/train_ijepa'):

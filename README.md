@@ -1,11 +1,11 @@
 <p align='center'>    
-    <img width="90%" align='center' src="img/logo_caption.svg#gh-light-mode-only"/>
-    <img width="90%" align='center' src="img/logo_caption_dark.svg#gh-dark-mode-only"/>
+    <img width="90%" align='center' src="img/logo_caption.png#gh-light-mode-only"/>
+    <img width="90%" align='center' src="img/logo_caption_dark.png#gh-dark-mode-only"/>
 </p>
 
 ---
 
-A variety of autoencoder structured models for generative modeling and/or representation learning in pytorch. Go ahead and train some models and reconstruct some things.
+A variety of autoencoder structured models for generative modeling and/or representation learning in pytorch. Models are mostly designed for usability/extensability/research rather than production implementations. But, go ahead and train some models and reconstruct some things!
 
 ## Table of contents
 

@@ -129,7 +129,8 @@ class FSQVAE(LightningModule):
         """Quantize the latent representation (z -> z_q)"""
         z = self.project_in(z)
         z = self.to_levels(z)
-        z_q, indices = self.vector_quantize(z)
+        z_q = self.vector_quantize.quantize(z)
+        indices = self.vector_quantize.codes_to_indices(z_q)
         z_q = self.from_levels(z_q)
         z_q = self.project_out(z_q)
         return z_q, indices
