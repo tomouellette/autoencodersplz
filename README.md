@@ -1,7 +1,9 @@
 <p align='center'>    
-    <img width="75%" align='center' src="img/logo_caption.svg#gh-light-mode-only"/>
-    <img width="75%" align='center' src="img/logo_caption_dark.svg#gh-dark-mode-only"/>
+    <img width="90%" align='center' src="img/logo_caption.svg#gh-light-mode-only"/>
+    <img width="90%" align='center' src="img/logo_caption_dark.svg#gh-dark-mode-only"/>
 </p>
+
+---
 
 A variety of autoencoder structured models for generative modeling and/or representation learning in pytorch.
 
