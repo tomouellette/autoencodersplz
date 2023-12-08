@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "autoencodersplz"
+version = "2023.12.07"
+authors = [{ name="Tom W. Ouellette"}, { name="Yiran Shao" }]
+description = "Generative modeling and representation learning through reconstruction"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[tool.setuptools.packages.find]
+include = ["img"]
+exclude = ["tests*", "*.sh*"]
+
+[project.urls]
+Homepage = "https://github.com/tomouellette/autoencodersplz"
+Issues = "https://github.com/tomouellette/autoencodersplz/issues"

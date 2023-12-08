@@ -9,6 +9,7 @@ A variety of autoencoder structured models for generative modeling and/or repres
 
 ## Table of contents
 
+- [Installation](#install)
 - [Models](#models)  
   - [LinearAE](#linearae)
   - [LinearResidualAE](#linearresidualae)
@@ -23,6 +24,13 @@ A variety of autoencoder structured models for generative modeling and/or repres
   - [Lightning](#lightning-training)
 - [Examples](#examples)
   - [Basic usage](#examples-basic)
+- [References](#references)
+
+## <span id='install'> Installation </span>
+
+```bash
+python3 -m pip install autoencodersplz
+```
 
 ## <span id='models'> Models </span>
 
@@ -355,4 +363,77 @@ trainer = Trainer(
 )
         
 trainer.fit()
+```
+
+## References
+
+```bibtex
+@article{hinton2006reducing,
+  title = {Reducing the dimensionality of data with neural networks},
+  author = {Geoffrey Hinton and Ruslan Salakhutdinov},
+  url = {10.1126/science.1127647},  
+  year = {2006},
+}
+```
+
+```bibtex
+@article{orhan2018skip,
+    title = {Skip Connections Eliminate Singularities},
+    author = {Emin Orhan and Xaq Pitkow},
+    url = {https://arxiv.org/abs/1701.09175},
+    year = {2018},    
+}
+```
+
+```bibtex
+@article{he2015deep,
+    title = {Deep Residual Learning for Image Recognition}, 
+    author = {Kaiming He and Xiangyu Zhang and Shaoqing Ren and Jian Sun},
+    url = {https://arxiv.org/abs/1512.03385},
+    year = {2016},
+}
+```
+```bibtex
+@misc{oord2018neural,
+    title={Neural Discrete Representation Learning}, 
+    author={Aaron van den Oord and Oriol Vinyals and Koray Kavukcuoglu},
+    url = {https://arxiv.org/abs/1711.00937},
+    year={2017},
+}
+```
+
+```bibtex
+@misc{mentzer2023finite,
+    title = {Finite Scalar Quantization: VQ-VAE Made Simple}, 
+    author = {Fabian Mentzer and David Minnen and Eirikur Agustsson and Michael Tschannen},    
+    url = {https://arxiv.org/abs/2309.15505},
+    year = {2023},
+}
+```
+
+```bibtex
+@misc{he2021masked,
+    title = {Masked Autoencoders Are Scalable Vision Learners}, 
+    author = {Kaiming He and Xinlei Chen and Saining Xie and Yanghao Li and Piotr Dollár and Ross Girshick},
+    url = {https://arxiv.org/abs/2111.06377},
+    year = {2021},
+}
+```
+
+```bibtex
+@misc{tolstikhin2021mlpmixer,
+    title = {MLP-Mixer: An all-MLP Architecture for Vision}, 
+    author = {Ilya Tolstikhin and Neil Houlsby and Alexander Kolesnikov and Lucas Beyer and Xiaohua Zhai and Thomas Unterthiner and Jessica Yung and Andreas Steiner and Daniel Keysers and Jakob Uszkoreit and Mario Lucic and Alexey Dosovitskiy},
+    url = {https://arxiv.org/abs/2105.01601},
+    year = {2021},
+}
+```
+
+```bibtex
+@misc{assran2023selfsupervised,
+    title = {Self-Supervised Learning from Images with a Joint-Embedding Predictive Architecture}, 
+    author = {Mahmoud Assran and Quentin Duval and Ishan Misra and Piotr Bojanowski and Pascal Vincent and Michael Rabbat and Yann LeCun and Nicolas Ballas},
+    url = {https://arxiv.org/abs/2301.08243},
+    year = {2023},
+}
 ```
