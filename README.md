@@ -29,7 +29,7 @@ A variety of autoencoder structured models for generative modeling and/or repres
 ## <span id='install'> Installation </span>
 
 ```bash
-python3 -m pip install autoencodersplz
+pip install autoencodersplz
 ```
 
 ## <span id='models'> Models </span>
