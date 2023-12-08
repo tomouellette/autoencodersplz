@@ -132,17 +132,17 @@ class LinearAE(LightningModule):
         return eps * std + mu
     
     def forward_loss(self, x: torch.Tensor, xhat: torch.Tensor, mu: torch.Tensor, var: torch.Tensor) -> torch.Tensor:
-        """Compute the ELBO = E[log(p(x|z))] - KLD(q(z|x) || p(z)) and reconstruction p(x'|z) loss"""
+        """Compute the ELBO = E[log(p(x|z))] - KLD(q(z|x) || p(z))"""
         self.iter += 1
         
-        # reconstruction loss L(x, x_reconstruct)
+        # reconstruction loss
         loss_r = F.mse_loss(
             xhat.flatten(1),
             x.flatten(1),
             reduction='none'
         ).sum(dim=-1)
         
-        # KLD loss E[log(p(x|z))] - KLD(q(z|x) || p(z))
+        # KLD loss
         if self.arguments['beta'] > 0:
             loss_kld = -0.5 * torch.sum(1 + var - mu.pow(2) - var.exp(), dim=-1)
             temperature = torch.clamp(torch.Tensor([self.iter/self.max_temperature]), 0, 1).to(x.device)
