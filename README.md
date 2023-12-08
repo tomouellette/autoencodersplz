@@ -24,6 +24,7 @@ A variety of autoencoder structured models for generative modeling and/or repres
   - [Lightning](#lightning-training)
 - [Examples](#examples)
   - [Basic usage](#examples-basic)
+- [Future additions](#additions)
 - [References](#references)
 
 ## <span id='install'> Installation </span>
@@ -364,6 +365,18 @@ trainer = Trainer(
         
 trainer.fit()
 ```
+
+## <span id='additions'> Future additions </span>
+
+- [ ] [Evolved Part Masking for Self-Supervised Learning](https://openaccess.thecvf.com/content/CVPR2023/papers/Feng_Evolved_Part_Masking_for_Self-Supervised_Learning_CVPR_2023_paper.pdf)
+- [ ] [Rethinking Reconstruction Autoencoder-Based Out-of-Distribution Detection](https://openaccess.thecvf.com/content/CVPR2022/papers/Zhou_Rethinking_Reconstruction_Autoencoder-Based_Out-of-Distribution_Detection_CVPR_2022_paper.pdf)
+- [ ] [Catch Missing Details: Image Reconstruction with Frequency Augmented
+Variational Autoencoder](https://openaccess.thecvf.com/content/CVPR2023/papers/Lin_Catch_Missing_Details_Image_Reconstruction_With_Frequency_Augmented_Variational_Autoencoder_CVPR_2023_paper.pdf)
+- [ ] [Dual Contradistinctive Generative Autoencoder](https://openaccess.thecvf.com/content/CVPR2021/papers/Parmar_Dual_Contradistinctive_Generative_Autoencoder_CVPR_2021_paper.pdf)
+- [ ] [Scale-MAE: A Scale-Aware Masked Autoencoder for Multiscale Geospatial
+Representation Learning](https://openaccess.thecvf.com/content/ICCV2023/papers/Reed_Scale-MAE_A_Scale-Aware_Masked_Autoencoder_for_Multiscale_Geospatial_Representation_Learning_ICCV_2023_paper.pdf)
+- [ ] [Guided Variational Autoencoder for Disentanglement Learning](https://openaccess.thecvf.com/content_CVPR_2020/papers/Ding_Guided_Variational_Autoencoder_for_Disentanglement_Learning_CVPR_2020_paper.pdf)
+- [ ] [MAGE: MAsked Generative Encoder to Unify Representation Learning and Image Synthesis](https://openaccess.thecvf.com/content/CVPR2023/papers/Li_MAGE_MAsked_Generative_Encoder_To_Unify_Representation_Learning_and_Image_CVPR_2023_paper.pdf)
 
 ## References
 
