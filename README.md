@@ -5,6 +5,8 @@
 
 ---
 
+A variety of autoencoder structured models for generative modeling and/or representation learning in pytorch. Models are mostly designed for usability/extensability/research rather than production implementations. But, go ahead and train some models and reconstruct some things!
+
 ## Table of contents
 
 - [Installation](#install)
@@ -24,10 +26,6 @@
   - [Basic usage](#examples-basic)
 - [Future additions](#additions)
 - [References](#references)
-
-## autoencodersplz
-
-A variety of autoencoder structured models for generative modeling and/or representation learning in pytorch. Models are mostly designed for usability/extensability/research rather than production implementations. But, go ahead and train some models and reconstruct some things!
 
 ## <span id='install'> Installation </span>
 
