@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "autoencodersplz"
-version = "2023.12.07"
+version = "2024.02.08"
 authors = [{ name="Tom W. Ouellette"}, { name="Yiran Shao" }]
 description = "Generative modeling and representation learning through reconstruction"
 readme = "README.md"
